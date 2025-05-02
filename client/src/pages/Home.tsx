@@ -53,13 +53,9 @@ export default function Home() {
         }`}
       >
         <div className="container mx-auto px-4">
-          <div className="relative rounded-lg flex justify-between items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
-            <div className="flex items-center">
-              <img src="/chyrris-logo.png" alt="CHYRRIS TECHNOLOGIES" className="h-10" />
-              <h1 className="ml-3 text-xl font-bold text-[#4cc4ff] glow-text">
-                CHYRRIS <span className="text-[#f5b308]">TECHNOLOGIES</span>
-              </h1>
-            </div>
+          <div className="relative rounded-lg flex justify-center items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
+            <img src="/chyrris-logo.png" alt="CHYRRIS" className="h-12" />
+          </div>
 
             <div className="hidden md:flex space-x-8">
               {navLinks.map((link) => (
