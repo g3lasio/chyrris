@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { useLanguage } from "@/hooks/useLanguage";
-import { ParticleBackground } from "@/components/ParticleBackground";
-import { ScanEffect } from "@/components/ScanEffect";
-import { HudPanel } from "@/components/HudPanel";
-import { Footer } from "@/sections/Footer";
+import { useLanguage } from "../hooks/useLanguage";
+import { ParticleBackground } from "../components/ParticleBackground";
+import { ScanEffect } from "../components/ScanEffect";
+import { HudPanel } from "../components/HudPanel";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { Footer } from "../sections/Footer";
 
 export default function TzotzilBiblePrivacy() {
   const { currentLanguage } = useLanguage();
@@ -119,7 +120,8 @@ export default function TzotzilBiblePrivacy() {
               </Link>
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher variant="minimal" />
               <div className="relative rounded-lg flex justify-center items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
                 <img src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" alt="CHYRRIS" className="h-8" />
               </div>
