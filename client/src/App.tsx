@@ -6,11 +6,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "./hooks/useLanguage";
 import NotFound from "@/pages/not-found";
 import Home from "./pages/Home";
+import TzotzilBible from "./pages/TzotzilBible";
+import TzotzilBiblePrivacy from "./pages/TzotzilBiblePrivacy";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/tzotzil-bible" component={TzotzilBible} />
+      <Route path="/tzotzil-bible/privacy" component={TzotzilBiblePrivacy} />
       <Route component={NotFound} />
     </Switch>
   );
