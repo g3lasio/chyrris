@@ -56,7 +56,7 @@ export default function Home() {
           <div className="relative rounded-lg flex justify-center items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
             <img src="/chyrris-logo.png" alt="CHYRRIS" className="h-12" />
           </div>
-
+          <div className="container mx-auto px-4">
             <div className="hidden md:flex space-x-8">
               {navLinks.map((link) => (
                 <a
@@ -144,6 +144,7 @@ export default function Home() {
               </div>
             </motion.div>
           )}
+          </div>
         </div>
       </motion.nav>
 
