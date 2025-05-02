@@ -53,37 +53,61 @@ export default function Home() {
         }`}
       >
         <div className="container mx-auto px-4">
-          <div className="relative rounded-lg flex justify-center items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
-            <img src="/chyrris-logo.png" alt="CHYRRIS" className="h-12" />
-          </div>
-          <div className="container mx-auto px-4">
-            <div className="hidden md:flex space-x-8">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="hover:text-[#35ffdd] transition-colors text-sm uppercase tracking-wider"
-                >
-                  {link.label}
-                </a>
-              ))}
-              
-              <div className="flex space-x-2 ml-4">
-                <button 
-                  onClick={() => setLanguage('en')}
-                  className={`px-2 py-1 text-xs rounded ${isEnglish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
-                >
-                  EN
-                </button>
-                <button 
-                  onClick={() => setLanguage('es')}
-                  className={`px-2 py-1 text-xs rounded ${isSpanish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
-                >
-                  ES
-                </button>
+          {/* Logo centered */}
+          <div className="flex justify-between items-center">
+            <div className="w-1/3 md:flex justify-start hidden">
+              {/* Left side navigation */}
+              <div className="flex space-x-4">
+                {navLinks.slice(0, 2).map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="hover:text-[#35ffdd] transition-colors text-sm uppercase tracking-wider"
+                  >
+                    {link.label}
+                  </a>
+                ))}
               </div>
             </div>
-
+            
+            {/* Logo */}
+            <div className="w-1/3 flex justify-center">
+              <div className="relative rounded-lg flex justify-center items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
+                <img src="/chyrris-logo.png" alt="CHYRRIS" className="h-12" />
+              </div>
+            </div>
+            
+            <div className="w-1/3 md:flex justify-end hidden">
+              {/* Right side navigation */}
+              <div className="flex space-x-4 items-center">
+                {navLinks.slice(2, 4).map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="hover:text-[#35ffdd] transition-colors text-sm uppercase tracking-wider"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                
+                <div className="flex space-x-2 ml-4">
+                  <button 
+                    onClick={() => setLanguage('en')}
+                    className={`px-2 py-1 text-xs rounded ${isEnglish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
+                  >
+                    EN
+                  </button>
+                  <button 
+                    onClick={() => setLanguage('es')}
+                    className={`px-2 py-1 text-xs rounded ${isSpanish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
+                  >
+                    ES
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
               <div className="flex space-x-1 mr-2">
                 <button 
@@ -145,7 +169,6 @@ export default function Home() {
             </motion.div>
           )}
         </div>
-      </motion.nav>
       </motion.nav>
 
       {/* Main content sections */}
