@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Link } from "wouter";
-import { useLanguage } from "@/hooks/useLanguage";
-import { ParticleBackground } from "@/components/ParticleBackground";
-import { ScanEffect } from "@/components/ScanEffect";
-import { HudPanel } from "@/components/HudPanel";
-import { TechCircle } from "@/components/TechCircle";
-import { Footer } from "@/sections/Footer";
+import { useLanguage } from "../hooks/useLanguage";
+import { ParticleBackground } from "../components/ParticleBackground";
+import { ScanEffect } from "../components/ScanEffect";
+import { HudPanel } from "../components/HudPanel";
+import { TechCircle } from "../components/TechCircle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { Footer } from "../sections/Footer";
 
 export default function TzotzilBible() {
   const { translations, currentLanguage } = useLanguage();
@@ -96,11 +97,14 @@ export default function TzotzilBible() {
               </div>
             </div>
             
-            <Link href="/tzotzil-bible/privacy">
-              <div className="text-[#4cc4ff] hover:text-[#35ffdd] text-sm uppercase cursor-pointer">
-                {content.privacyPolicyLink}
-              </div>
-            </Link>
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher variant="minimal" />
+              <Link href="/tzotzil-bible/privacy">
+                <div className="text-[#4cc4ff] hover:text-[#35ffdd] text-sm uppercase cursor-pointer">
+                  {content.privacyPolicyLink}
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
       </motion.nav>

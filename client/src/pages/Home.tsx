@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { ParticleBackground } from "@/components/ParticleBackground";
-import { ScanEffect } from "@/components/ScanEffect";
-import { useLanguage } from "@/hooks/useLanguage";
-import { Hero } from "@/sections/Hero";
-import { About } from "@/sections/About";
-import { Technologies } from "@/sections/Technologies";
-import { Applications } from "@/sections/Applications";
-import { Contact } from "@/sections/Contact";
-import { Footer } from "@/sections/Footer";
+import { ParticleBackground } from "../components/ParticleBackground";
+import { ScanEffect } from "../components/ScanEffect";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { useLanguage } from "../hooks/useLanguage";
+import { Hero } from "../sections/Hero";
+import { About } from "../sections/About";
+import { Technologies } from "../sections/Technologies";
+import { Applications } from "../sections/Applications";
+import { Contact } from "../sections/Contact";
+import { Footer } from "../sections/Footer";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -200,51 +201,13 @@ export default function Home() {
                   </a>
                 ))}
                 
-                <div className="flex space-x-2 ml-4 relative armor-plate p-1">
-                  <button 
-                    onClick={() => setLanguage('en')}
-                    className={`px-2 py-1 text-xs rounded relative ${isEnglish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
-                  >
-                    EN
-                    {isEnglish && (
-                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#35ffdd] animate-pulse"></div>
-                    )}
-                  </button>
-                  <button 
-                    onClick={() => setLanguage('es')}
-                    className={`px-2 py-1 text-xs rounded relative ${isSpanish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
-                  >
-                    ES
-                    {isSpanish && (
-                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#35ffdd] animate-pulse"></div>
-                    )}
-                  </button>
-                </div>
+                <LanguageSwitcher variant="full" className="ml-4" />
               </div>
             </div>
             
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
-              <div className="flex space-x-1 mr-2 armor-plate p-1">
-                <button 
-                  onClick={() => setLanguage('en')}
-                  className={`px-2 py-0.5 text-xs rounded relative ${isEnglish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
-                >
-                  EN
-                  {isEnglish && (
-                    <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#35ffdd] animate-pulse"></div>
-                  )}
-                </button>
-                <button 
-                  onClick={() => setLanguage('es')}
-                  className={`px-2 py-0.5 text-xs rounded relative ${isSpanish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
-                >
-                  ES
-                  {isSpanish && (
-                    <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#35ffdd] animate-pulse"></div>
-                  )}
-                </button>
-              </div>
+              <LanguageSwitcher variant="minimal" className="mr-2" />
               
               <button
                 onClick={toggleMenu}
