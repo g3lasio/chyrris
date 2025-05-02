@@ -13,7 +13,8 @@ export function Applications() {
       tags: [translations.applications.tzotzil.tag1, translations.applications.tzotzil.tag2],
       appNumber: 1,
       tagline: translations.applications.tzotzil.tagline,
-      tagColor: "gold" as const
+      tagColor: "gold" as const,
+      linkTo: "/tzotzil-bible"
     },
     {
       title: translations.applications.owlFenc.title,
@@ -72,6 +73,7 @@ export function Applications() {
               tagline={app.tagline}
               tagColor={app.tagColor}
               delay={index * 0.2}
+              linkTo={app.linkTo}
             />
           ))}
         </div>

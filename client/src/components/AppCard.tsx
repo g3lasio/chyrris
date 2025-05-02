@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
+import { Link } from "wouter";
 
 interface AppCardProps {
   title: string;
@@ -10,6 +11,7 @@ interface AppCardProps {
   tagline: string;
   tagColor: "red" | "gold" | "blue" | "teal";
   delay?: number;
+  linkTo?: string;
 }
 
 export function AppCard({
@@ -21,6 +23,7 @@ export function AppCard({
   tagline,
   tagColor,
   delay = 0,
+  linkTo,
 }: AppCardProps) {
   const tagColors = {
     red: {
@@ -85,22 +88,43 @@ export function AppCard({
               </span>
             ))}
           </div>
-          <a href="#" className="text-[#4cc4ff] hover:text-[#35ffdd] transition">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              />
-            </svg>
-          </a>
+          {linkTo ? (
+            <Link href={linkTo}>
+              <a className="text-[#4cc4ff] hover:text-[#35ffdd] transition">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </a>
+            </Link>
+          ) : (
+            <a className="text-[#4cc4ff] hover:text-[#35ffdd] transition cursor-default opacity-50">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                />
+              </svg>
+            </a>
+          )}
         </div>
       </div>
     </motion.div>
