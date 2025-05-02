@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 222 10% 10%;
+  --foreground: 210 40% 98%;
+  
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  
+  --popover: 222 14% 12%;
+  --popover-foreground: 210 40% 98%;
+  
+  --card: 222 14% 12%;
+  --card-foreground: 210 40% 98%;
+  
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  
+  --primary: 207 90% 54%;
+  --primary-foreground: 210 40% 98%;
+  
+  --secondary: 195 80% 55%;
+  --secondary-foreground: 210 40% 98%;
+  
+  --accent: 45 93% 47%;
+  --accent-foreground: 210 40% 98%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --chart-1: 207 90% 54%;
+  --chart-2: 0 84% 60%;
+  --chart-3: 45 93% 47%;
+  --chart-4: 162 94% 61%;
+  --chart-5: 283 68% 70%;
+  
+  --stark-red: 0 84% 60%;
+  --stark-gold: 45 93% 47%;
+  --hud-blue: 195 100% 64%;
+  --glow-teal: 162 94% 61%;
+  
+  --ring: 216 34% 17%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-[#121721] font-quantico text-white;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(76, 196, 255, 0.03) 0%, transparent 70%),
+      radial-gradient(circle at 90% 80%, rgba(229, 46, 46, 0.03) 0%, transparent 70%);
+    overflow-x: hidden;
+  }
+
+  /* Typography classes */
+  .font-quantico {
+    font-family: 'Quantico', sans-serif;
+  }
+
+  .font-rajdhani {
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  /* Special effects */
+  .tech-border {
+    @apply relative border border-[#4cc4ff40] overflow-hidden;
+  }
+
+  .hex-bg {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5.278L52.5 18.139v25.722L30 56.722 7.5 43.861V18.139L30 5.278zm0 2.887L10 19.463v21.074L30 53.834l20-13.297V19.463L30 8.165z' fill='%234cc4ff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  .glow-text {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  /* Animation classes */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-rotate-slow {
+    animation: rotate 15s linear infinite;
+  }
+
+  .animate-scan-line {
+    animation: scan-line 2s linear infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes scan-line {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100%); }
+  }
+
+  @keyframes slide {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  @keyframes scan {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+}
