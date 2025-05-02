@@ -144,8 +144,8 @@ export default function Home() {
               </div>
             </motion.div>
           )}
-          </div>
         </div>
+      </motion.nav>
       </motion.nav>
 
       {/* Main content sections */}
