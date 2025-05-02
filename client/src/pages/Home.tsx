@@ -73,7 +73,7 @@ export default function Home() {
             {/* Logo */}
             <div className="w-1/3 flex justify-center">
               <div className="relative rounded-lg flex justify-center items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
-                <img src="https://i.postimg.cc/vZDgP6VP/Chyrris-technologies.png" alt="CHYRRIS" className="h-12 w-auto object-contain" />
+                <img src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" alt="CHYRRIS" className="h-12 w-auto object-contain" />
               </div>
             </div>
             
