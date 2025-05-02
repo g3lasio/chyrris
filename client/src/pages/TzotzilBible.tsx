@@ -82,12 +82,12 @@ export default function TzotzilBible() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             <Link href="/">
-              <a className="flex items-center space-x-2 text-[#4cc4ff] hover:text-[#35ffdd]">
+              <div className="flex items-center space-x-2 text-[#4cc4ff] hover:text-[#35ffdd] cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                 </svg>
                 <span>{content.backToHome}</span>
-              </a>
+              </div>
             </Link>
             
             <div className="w-1/3 flex justify-center">
@@ -97,9 +97,9 @@ export default function TzotzilBible() {
             </div>
             
             <Link href="/tzotzil-bible/privacy">
-              <a className="text-[#4cc4ff] hover:text-[#35ffdd] text-sm uppercase">
+              <div className="text-[#4cc4ff] hover:text-[#35ffdd] text-sm uppercase cursor-pointer">
                 {content.privacyPolicyLink}
-              </a>
+              </div>
             </Link>
           </div>
         </div>
