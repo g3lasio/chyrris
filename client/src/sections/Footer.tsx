@@ -16,11 +16,9 @@ export function Footer() {
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center mb-4 md:mb-0">
-            <div className="h-8 w-8 rounded-full bg-[#e62e2e] flex items-center justify-center border border-[#f5b308]">
-              <span className="text-sm font-bold">C</span>
-            </div>
+            <img src="/chyrris-logo.png" alt="CHYRRIS TECHNOLOGIES" className="h-8" />
             <h3 className="ml-2 text-lg font-bold text-[#4cc4ff]">
-              CHYRRIS<span className="text-[#f5b308]">TECH</span>
+              CHYRRIS <span className="text-[#f5b308]">TECHNOLOGIES</span>
             </h3>
           </div>
           

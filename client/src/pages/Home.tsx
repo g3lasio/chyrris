@@ -55,11 +55,9 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="relative rounded-lg flex justify-between items-center p-3 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
             <div className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-[#e62e2e] flex items-center justify-center border-2 border-[#f5b308] animate-pulse-glow">
-                <span className="text-lg font-bold">C</span>
-              </div>
+              <img src="/chyrris-logo.png" alt="CHYRRIS TECHNOLOGIES" className="h-10" />
               <h1 className="ml-3 text-xl font-bold text-[#4cc4ff] glow-text">
-                CHYRRIS<span className="text-[#f5b308]">TECH</span>
+                CHYRRIS <span className="text-[#f5b308]">TECHNOLOGIES</span>
               </h1>
             </div>
 
