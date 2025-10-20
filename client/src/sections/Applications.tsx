@@ -14,7 +14,7 @@ export function Applications() {
       appNumber: 1,
       tagline: translations.applications.tzotzil.tagline,
       tagColor: "gold" as const,
-      linkTo: "/tzotzil-bible"
+      linkTo: "https://bible.chyrris.com/"
     },
     {
       title: translations.applications.owlFenc.title,
@@ -23,7 +23,8 @@ export function Applications() {
       tags: [translations.applications.owlFenc.tag1, translations.applications.owlFenc.tag2],
       appNumber: 2,
       tagline: translations.applications.owlFenc.tagline,
-      tagColor: "red" as const
+      tagColor: "red" as const,
+      linkTo: "https://app.owlfenc.com"
     },
     {
       title: translations.applications.andyAi.title,

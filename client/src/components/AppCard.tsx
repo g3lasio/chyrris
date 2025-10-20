@@ -89,8 +89,14 @@ export function AppCard({
             ))}
           </div>
           {linkTo ? (
-            <Link href={linkTo}>
-              <div className="text-[#4cc4ff] hover:text-[#35ffdd] transition cursor-pointer">
+            linkTo.startsWith('http') ? (
+              <a 
+                href={linkTo} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[#4cc4ff] hover:text-[#35ffdd] transition cursor-pointer"
+                data-testid={`link-app-${appNumber}`}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -105,8 +111,27 @@ export function AppCard({
                     d="M14 5l7 7m0 0l-7 7m7-7H3"
                   />
                 </svg>
-              </div>
-            </Link>
+              </a>
+            ) : (
+              <Link href={linkTo}>
+                <div className="text-[#4cc4ff] hover:text-[#35ffdd] transition cursor-pointer" data-testid={`link-app-${appNumber}`}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
+                  </svg>
+                </div>
+              </Link>
+            )
           ) : (
             <span className="text-[#4cc4ff] hover:text-[#35ffdd] transition cursor-default opacity-50">
               <svg
