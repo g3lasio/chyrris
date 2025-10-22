@@ -69,12 +69,19 @@ export const esTranslations = {
       tag1: "Multilingüe",
       tag2: "Cultural"
     },
-    owlFenc: {
-      title: "Owl Fenc",
+    mervinAi: {
+      title: "Mervin AI",
       description: "Generador de estimaciones impulsado por IA para contratistas, proporcionando cálculos precisos de costos y requisitos de materiales para proyectos de construcción.",
       tagline: "Inteligencia en Construcción",
       tag1: "Estimaciones IA",
       tag2: "Construcción"
+    },
+    owlFenc: {
+      title: "Owl Fenc Company",
+      description: "Servicios profesionales de construcción y contratación con compromiso en calidad, confiabilidad y satisfacción del cliente.",
+      tagline: "Excelencia en Construcción",
+      tag1: "Contratación",
+      tag2: "Profesional"
     },
     andyAi: {
       title: "Andy AI",

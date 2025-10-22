@@ -17,21 +17,31 @@ export function Applications() {
       linkTo: "https://bible.chyrris.com/"
     },
     {
-      title: translations.applications.owlFenc.title,
-      description: translations.applications.owlFenc.description,
+      title: translations.applications.mervinAi.title,
+      description: translations.applications.mervinAi.description,
       imageSrc: "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375",
-      tags: [translations.applications.owlFenc.tag1, translations.applications.owlFenc.tag2],
+      tags: [translations.applications.mervinAi.tag1, translations.applications.mervinAi.tag2],
       appNumber: 2,
-      tagline: translations.applications.owlFenc.tagline,
+      tagline: translations.applications.mervinAi.tagline,
       tagColor: "red" as const,
       linkTo: "https://app.owlfenc.com"
+    },
+    {
+      title: translations.applications.owlFenc.title,
+      description: translations.applications.owlFenc.description,
+      imageSrc: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122",
+      tags: [translations.applications.owlFenc.tag1, translations.applications.owlFenc.tag2],
+      appNumber: 3,
+      tagline: translations.applications.owlFenc.tagline,
+      tagColor: "teal" as const,
+      linkTo: "https://owlfenc.com/"
     },
     {
       title: translations.applications.andyAi.title,
       description: translations.applications.andyAi.description,
       imageSrc: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
       tags: [translations.applications.andyAi.tag1, translations.applications.andyAi.tag2],
-      appNumber: 3,
+      appNumber: 4,
       tagline: translations.applications.andyAi.tagline,
       tagColor: "blue" as const
     }
@@ -62,7 +72,7 @@ export function Applications() {
           </motion.p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {apps.map((app, index) => (
             <AppCard
               key={index}

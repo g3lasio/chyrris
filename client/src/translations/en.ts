@@ -69,12 +69,19 @@ export const enTranslations = {
       tag1: "Multilingual",
       tag2: "Cultural"
     },
-    owlFenc: {
-      title: "Owl Fenc",
+    mervinAi: {
+      title: "Mervin AI",
       description: "AI-powered estimation generator for contractors, providing precise cost calculations and material requirements for construction projects.",
       tagline: "Construction Intelligence",
       tag1: "AI Estimates",
       tag2: "Construction"
+    },
+    owlFenc: {
+      title: "Owl Fenc Company",
+      description: "Professional construction and contracting services with a commitment to quality, reliability, and customer satisfaction.",
+      tagline: "Construction Excellence",
+      tag1: "Contracting",
+      tag2: "Professional"
     },
     andyAi: {
       title: "Andy AI",

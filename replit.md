@@ -169,11 +169,17 @@ The Chyrris Technologies platform showcases three main applications in the Appli
 - Description: Bilingual Bible application with Spanish and Tzotzil dialect translations
 - Features AI assistant capabilities for spiritual guidance
 
-**Owl Fenc App (Deployed):**
+**Mervin AI (Deployed):**
 - Production URL: https://app.owlfenc.com
 - Status: Live and accessible
 - Description: AI-powered estimation generator for contractors
 - Provides precise cost calculations and material requirements for construction projects
+
+**Owl Fenc Company (Deployed):**
+- Production URL: https://owlfenc.com/
+- Status: Live and accessible
+- Description: Professional construction and contracting services
+- Provides quality construction solutions with reliability and customer satisfaction
 
 **Andy AI (In Development):**
 - Status: Not yet deployed
