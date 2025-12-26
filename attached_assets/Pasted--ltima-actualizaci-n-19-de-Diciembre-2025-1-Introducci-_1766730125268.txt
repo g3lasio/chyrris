@@ -1,0 +1,60 @@
+Última actualización: 19 de Diciembre, 2025
+1. Introducción
+Tzotzil Bible ("nosotros", "nuestra aplicación") se compromete a proteger la privacidad de nuestros usuarios. Esta Política de Privacidad explica cómo recopilamos, usamos, almacenamos y protegemos su información cuando utiliza nuestra aplicación de estudio bíblico.
+Al utilizar Tzotzil Bible, usted acepta las prácticas descritas en esta política. Le recomendamos leer este documento completo para comprender nuestro compromiso con su privacidad.
+2. Información que Recopilamos
+2.1 Datos de Uso Local
+Almacenamos localmente en su dispositivo:
+• Preferencias de la aplicación (tamaño de fuente, configuraciones)
+• Historial de conversaciones con Nevin AI
+• Marcadores y notas personales
+• Progreso de lectura bíblica
+2.2 Datos Procesados por IA
+Cuando utiliza el asistente Nevin AI:
+• Sus preguntas y consultas teológicas son enviadas a servicios externos de inteligencia artificial (Anthropic Claude) para generar respuestas.
+• No almacenamos sus conversaciones en servidores externos de forma permanente.
+• Las consultas se procesan en tiempo real y no se utilizan para entrenar modelos de IA.
+2.3 Datos Técnicos
+Podemos recopilar automáticamente:
+• Información básica del dispositivo (modelo, sistema operativo)
+• Reportes de errores anónimos para mejorar la estabilidad
+• Estadísticas agregadas de uso (sin identificación personal)
+3. Uso de la Información
+Utilizamos la información recopilada para:
+• Proporcionar y mejorar la funcionalidad de la aplicación
+• Generar respuestas teológicas personalizadas a través de Nevin AI
+• Guardar sus preferencias y configuraciones
+• Diagnosticar problemas técnicos y mejorar la estabilidad
+• Desarrollar nuevas funcionalidades
+4. Compartir Información con Terceros
+Compartimos información limitada con los siguientes terceros:
+
+Anthropic (Claude AI): Las consultas realizadas a Nevin AI son procesadas por la API de Anthropic Claude. Anthropic tiene su propia política de privacidad y no utiliza las consultas de API para entrenar sus modelos.
+
+No vendemos, alquilamos ni compartimos su información personal con terceros para fines de marketing.
+5. Almacenamiento y Seguridad
+• Los datos locales se almacenan de forma segura en el almacenamiento interno de su dispositivo.
+• Utilizamos conexiones cifradas (HTTPS) para todas las comunicaciones con servidores externos.
+• No almacenamos contraseñas ni información financiera.
+• Implementamos medidas de seguridad estándar de la industria para proteger sus datos durante la transmisión.
+6. Retención de Datos
+• Los datos locales permanecen en su dispositivo hasta que desinstale la aplicación o los elimine manualmente.
+• Puede eliminar su historial de conversaciones con Nevin desde la sección de Ajustes.
+• Los datos de sesión con servicios de IA no se retienen más allá de la sesión activa.
+7. Sus Derechos
+Usted tiene derecho a:
+• Acceder a los datos almacenados localmente en su dispositivo
+• Eliminar su historial de conversaciones con Nevin
+• Desinstalar la aplicación para eliminar todos los datos locales
+• Contactarnos para solicitar información sobre sus datos
+• Usar la aplicación sin la función de IA si lo prefiere
+8. Menores de Edad
+Tzotzil Bible está diseñada para uso general y familiar. No recopilamos intencionalmente información personal de menores de 13 años. El contenido de la aplicación es apropiado para todas las edades y promueve valores espirituales positivos.
+9. Cambios a esta Política
+Podemos actualizar esta política ocasionalmente. Le notificaremos de cambios significativos a través de la aplicación. La fecha de "Última actualización" al inicio de este documento indica cuándo se realizó la última modificación.
+10. Contacto
+Si tiene preguntas sobre esta Política de Privacidad o sobre el manejo de sus datos, puede contactarnos en:
+
+Email: gelasio@chyrris.com
+Web: https://bible.chyrris.com
+Su privacidad es nuestra prioridad
