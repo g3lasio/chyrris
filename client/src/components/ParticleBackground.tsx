@@ -32,17 +32,17 @@ export function ParticleBackground() {
     window.addEventListener("resize", handleResize);
     handleResize();
 
-    // Initialize particles
-    const colors = ["#4cc4ff", "#e62e2e", "#f5b308", "#35ffdd"];
-    const particleCount = Math.min(50, Math.floor(window.innerWidth / 40));
+    // Initialize particles - Reduced and refined for premium look
+    const colors = ["#4cc4ff", "#35ffdd"];
+    const particleCount = Math.min(20, Math.floor(window.innerWidth / 100));
     
     particlesRef.current = Array.from({ length: particleCount }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 2 + 1,
-      speedX: (Math.random() - 0.5) * 0.5,
-      speedY: (Math.random() - 0.5) * 0.5,
-      opacity: Math.random() * 0.5 + 0.2,
+      size: Math.random() * 1.5 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.3,
+      speedY: (Math.random() - 0.5) * 0.3,
+      opacity: Math.random() * 0.3 + 0.1,
       color: colors[Math.floor(Math.random() * colors.length)]
     }));
 

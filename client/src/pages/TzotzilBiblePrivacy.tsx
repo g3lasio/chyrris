@@ -2,8 +2,6 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { useLanguage } from "../hooks/useLanguage";
 import { ParticleBackground } from "../components/ParticleBackground";
-import { ScanEffect } from "../components/ScanEffect";
-import { HudPanel } from "../components/HudPanel";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Footer } from "../sections/Footer";
 
@@ -85,42 +83,49 @@ export default function TzotzilBiblePrivacy() {
   };
 
   return (
-    <main className="hex-bg min-h-screen relative overflow-x-hidden">
+    <main className="min-h-screen relative overflow-x-hidden bg-[#0a0d12]">
       <ParticleBackground />
-      <ScanEffect />
       
+      {/* Clean navbar */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
-        className="fixed top-0 left-0 w-full z-50 py-2 bg-[#12172199] backdrop-blur-md"
+        className="fixed top-0 left-0 w-full z-50 py-4 bg-[#0a0d12]/80 backdrop-blur-xl border-b border-[#4cc4ff]/10"
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-6">
           <div className="flex justify-between items-center">
-            <div className="flex space-x-4">
-              <Link href="/">
-                <div className="flex items-center space-x-2 text-[#4cc4ff] hover:text-[#35ffdd] cursor-pointer">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                  </svg>
-                  <span>{content.backToHome}</span>
-                </div>
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <LanguageSwitcher variant="minimal" />
-              <div className="relative rounded-lg flex justify-center items-center p-2 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
-                <img src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" alt="CHYRRIS" className="h-8" />
+            <Link href="/">
+              <div className="flex items-center gap-2 text-[#4cc4ff] hover:text-[#35ffdd] cursor-pointer transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
+                <span>{content.backToHome}</span>
               </div>
+            </Link>
+            
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher variant="minimal" />
+              <img 
+                src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" 
+                alt="CHYRRIS" 
+                className="h-8" 
+              />
             </div>
           </div>
         </div>
       </motion.nav>
       
-      <section className="pt-32 pb-16">
-        <div className="container mx-auto px-4">
-          <HudPanel code="PRIVACY-POLICY" className="max-w-4xl mx-auto">
+      {/* Content */}
+      <section className="pt-32 pb-20">
+        <div className="container mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto p-8 rounded-2xl bg-[#0f1419]/80 backdrop-blur-xl border border-[#4cc4ff]/10"
+          >
+            {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-[#f5b308]">{content.title}</h1>
               <h2 className="text-xl text-[#4cc4ff] mt-2">{content.subtitle}</h2>
@@ -130,23 +135,25 @@ export default function TzotzilBiblePrivacy() {
               </div>
             </div>
             
-            <div className="border-b border-[#4cc4ff30] mb-6 pb-6">
-              <p className="text-gray-300 font-rajdhani whitespace-pre-line">
+            {/* Introduction */}
+            <div className="border-b border-[#4cc4ff]/10 mb-8 pb-8">
+              <p className="text-gray-300 font-rajdhani whitespace-pre-line leading-relaxed">
                 {content.introduction}
               </p>
             </div>
             
+            {/* Sections */}
             <div className="space-y-8">
               {content.sections.map((section, index) => (
-                <div key={index} className="border-b border-[#4cc4ff20] pb-6 last:border-0">
-                  <h3 className="text-[#4cc4ff] font-bold mb-3">{section.title}</h3>
-                  <div className="text-gray-300 font-rajdhani whitespace-pre-line">
+                <div key={index} className="border-b border-[#4cc4ff]/10 pb-6 last:border-0">
+                  <h3 className="text-[#4cc4ff] font-bold mb-4">{section.title}</h3>
+                  <div className="text-gray-300 font-rajdhani whitespace-pre-line leading-relaxed">
                     {section.content}
                   </div>
                 </div>
               ))}
             </div>
-          </HudPanel>
+          </motion.div>
         </div>
       </section>
       

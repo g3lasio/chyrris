@@ -53,10 +53,7 @@
   }
   
   body {
-    @apply bg-[#121721] font-quantico text-white;
-    background-image: 
-      radial-gradient(circle at 10% 20%, rgba(76, 196, 255, 0.03) 0%, transparent 70%),
-      radial-gradient(circle at 90% 80%, rgba(229, 46, 46, 0.03) 0%, transparent 70%);
+    @apply bg-[#0a0d12] font-quantico text-white;
     overflow-x: hidden;
   }
 

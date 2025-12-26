@@ -51,19 +51,20 @@ export default function TzotzilBible() {
   };
 
   return (
-    <main className="hex-bg min-h-screen relative overflow-x-hidden">
+    <main className="min-h-screen relative overflow-x-hidden bg-[#0a0d12]">
       <ParticleBackground />
       
+      {/* Clean navbar */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
-        className="fixed top-0 left-0 w-full z-50 py-2 bg-[#12172199] backdrop-blur-md"
+        className="fixed top-0 left-0 w-full z-50 py-4 bg-[#0a0d12]/80 backdrop-blur-xl border-b border-[#4cc4ff]/10"
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-6">
           <div className="flex justify-between items-center">
             <Link href="/">
-              <div className="flex items-center space-x-2 text-[#4cc4ff] hover:text-[#35ffdd] cursor-pointer">
+              <div className="flex items-center gap-2 text-[#4cc4ff] hover:text-[#35ffdd] cursor-pointer transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                 </svg>
@@ -71,16 +72,19 @@ export default function TzotzilBible() {
               </div>
             </Link>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <LanguageSwitcher variant="minimal" />
-              <div className="relative rounded-lg flex justify-center items-center p-2 border border-[#4cc4ff40] bg-[#1a202c99] backdrop-blur-md">
-                <img src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" alt="CHYRRIS" className="h-8" />
-              </div>
+              <img 
+                src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" 
+                alt="CHYRRIS" 
+                className="h-8" 
+              />
             </div>
           </div>
         </div>
       </motion.nav>
       
+      {/* Hero banner */}
       <section className="pt-20">
         <motion.div 
           className="w-full"
@@ -95,7 +99,8 @@ export default function TzotzilBible() {
           />
         </motion.div>
         
-        <div className="container mx-auto px-4 py-12">
+        {/* Content */}
+        <div className="container mx-auto px-6 py-16">
           <motion.div 
             className="max-w-4xl mx-auto text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -105,16 +110,17 @@ export default function TzotzilBible() {
             <h1 className="text-4xl md:text-5xl font-bold text-[#f5b308] mb-2">{content.title}</h1>
             <p className="text-[#4cc4ff] text-lg mb-6">{content.subtitle}</p>
             
-            <p className="text-gray-300 text-lg font-rajdhani mb-8 max-w-2xl mx-auto">
+            <p className="text-gray-400 text-lg font-rajdhani mb-10 max-w-2xl mx-auto leading-relaxed">
               {content.description}
             </p>
             
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
               <a 
                 href="https://bible.chyrris.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="px-8 py-4 bg-[#f5b308] hover:bg-[#e5a308] text-white font-bold rounded-lg text-lg uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                className="px-8 py-4 bg-gradient-to-r from-[#f5b308] to-[#e5a308] hover:opacity-90 text-[#0a0d12] font-bold rounded-xl text-lg uppercase tracking-wider transition-opacity flex items-center justify-center gap-2"
                 data-testid="button-open-app"
               >
                 {content.openApp}
@@ -125,7 +131,7 @@ export default function TzotzilBible() {
               
               <Link href="/tzotzil-bible/privacy">
                 <div 
-                  className="px-8 py-4 border-2 border-[#4cc4ff] text-[#4cc4ff] hover:bg-[#4cc4ff20] font-bold rounded-lg text-lg uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  className="px-8 py-4 border border-[#4cc4ff]/30 hover:border-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-[#4cc4ff] font-semibold rounded-xl text-lg uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
                   data-testid="button-privacy-policy"
                 >
                   {content.privacyPolicy}
@@ -137,6 +143,7 @@ export default function TzotzilBible() {
             </div>
           </motion.div>
           
+          {/* Features grid */}
           <motion.div 
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -146,10 +153,10 @@ export default function TzotzilBible() {
             {content.features.map((feature, index) => (
               <div 
                 key={index}
-                className="bg-[#1a202c99] border border-[#4cc4ff30] rounded-lg p-6 text-center hover:border-[#f5b308] transition-colors"
+                className="p-6 rounded-2xl bg-[#0f1419]/80 backdrop-blur-xl border border-[#4cc4ff]/10 hover:border-[#f5b308]/30 transition-all text-center group"
               >
-                <div className="text-4xl mb-3">{feature.icon}</div>
-                <h3 className="text-[#4cc4ff] font-bold mb-2">{feature.title}</h3>
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
+                <h3 className="text-white font-bold mb-2 group-hover:text-[#f5b308] transition-colors">{feature.title}</h3>
                 <p className="text-gray-400 text-sm font-rajdhani">{feature.desc}</p>
               </div>
             ))}

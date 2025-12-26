@@ -45,69 +45,100 @@ export function Applications() {
   ];
 
   return (
-    <section id="applications" className="py-20 relative">
-      <div className="container mx-auto px-4 z-10 relative">
-        <div className="text-center mb-16">
-          <motion.h2 
-            className="text-3xl font-bold inline-block relative"
+    <section id="applications" className="py-32 relative">
+      {/* Clean gradient background */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0a0d12] via-[#0f1419] to-[#0a0d12]"></div>
+      
+      <div className="container mx-auto px-6 z-10 relative">
+        {/* Section header */}
+        <div className="text-center mb-20">
+          <motion.span 
+            className="text-[#e62e2e] text-sm uppercase tracking-widest"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="text-[#e62e2e] glow-text">{translations.applications.ourTitle}</span> {translations.applications.title}
-            <div className="h-1 w-full bg-[#f5b308] mt-2"></div>
+            {translations.applications.ourTitle}
+          </motion.span>
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold mt-4 text-white"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            {translations.applications.title}
           </motion.h2>
+          <motion.div 
+            className="w-24 h-1 bg-gradient-to-r from-[#f5b308] to-[#e62e2e] mx-auto mt-6"
+            initial={{ width: 0 }}
+            whileInView={{ width: 96 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          />
           <motion.p 
-            className="text-gray-300 font-rajdhani mt-4 max-w-2xl mx-auto"
+            className="text-gray-400 font-rajdhani mt-6 max-w-2xl mx-auto text-lg"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
             {translations.applications.description}
           </motion.p>
         </div>
         
+        {/* App cards grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Tzotzil Bible - Featured App */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.6 }}
-            className="hud-panel rounded-lg overflow-hidden relative group shadow-[0_10px_20px_rgba(53,255,221,0)] hover:shadow-[0_10px_20px_rgba(53,255,221,0.2)]"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -8 }}
+            transition={{ duration: 0.5 }}
+            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 backdrop-blur-xl border border-[#f5b308]/20 hover:border-[#f5b308]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(245,179,8,0.1)]"
             data-testid="card-tzotzil-bible"
           >
+            {/* Image */}
             <div className="w-full h-48 relative overflow-hidden">
               <img
                 src={tzotzilBanner}
                 alt={translations.applications.tzotzil.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#121721] via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f1419] via-[#0f1419]/50 to-transparent"></div>
+              
+              {/* Featured badge */}
+              <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider bg-[#f5b308]/20 text-[#f5b308] border border-[#f5b308]/40">
+                01
+              </div>
             </div>
 
-            <div className="p-6 relative">
-              <div className="absolute top-0 right-0 translate-y-4 -translate-x-4 w-16 h-16 rounded-full bg-[#1a202c] border-2 border-[#f5b308] flex items-center justify-center">
-                <span className="text-[#f5b308] text-xs">APP 01</span>
-              </div>
-
-              <h3 className="text-xl font-bold text-[#f5b308] mb-3">{translations.applications.tzotzil.title}</h3>
-              <p className="text-gray-300 font-rajdhani mb-4 text-sm">
+            {/* Content */}
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-[#f5b308] mb-3 group-hover:text-[#f5b308] transition-colors">
+                {translations.applications.tzotzil.title}
+              </h3>
+              <p className="text-gray-400 font-rajdhani mb-4 text-sm leading-relaxed">
                 {translations.applications.tzotzil.description}
               </p>
 
-              <div className="flex items-center mb-4">
-                <div className="h-2 w-2 rounded-full animate-pulse bg-[#f5b30820] border border-[#f5b308] mr-2"></div>
-                <p className="text-[#f5b308] text-sm uppercase tracking-wider">{translations.applications.tzotzil.tagline}</p>
+              {/* Tagline */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-[#f5b308]"></div>
+                <span className="text-xs uppercase tracking-wider text-[#f5b308]">
+                  {translations.applications.tzotzil.tagline}
+                </span>
               </div>
 
-              <div className="flex flex-col gap-2">
+              {/* Action buttons */}
+              <div className="flex flex-col gap-3 pt-4 border-t border-[#f5b308]/10">
                 <a 
                   href="https://bible.chyrris.com/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-full py-2 px-4 bg-[#f5b308] hover:bg-[#e5a308] text-white text-center rounded text-sm font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-[#f5b308] to-[#e5a308] hover:opacity-90 text-[#0a0d12] text-center rounded-xl text-sm font-bold uppercase tracking-wider transition-opacity flex items-center justify-center gap-2"
                   data-testid="button-tzotzil-open-app"
                 >
                   {tzotzilContent.openApp}
@@ -118,7 +149,7 @@ export function Applications() {
                 
                 <Link href="/tzotzil-bible/privacy">
                   <div 
-                    className="w-full py-2 px-4 border border-[#4cc4ff] text-[#4cc4ff] hover:bg-[#4cc4ff20] text-center rounded text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-xl text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2"
                     data-testid="button-tzotzil-privacy"
                   >
                     {tzotzilContent.privacyPolicy}
@@ -131,6 +162,7 @@ export function Applications() {
             </div>
           </motion.div>
 
+          {/* Other apps */}
           {apps.map((app, index) => (
             <AppCard
               key={index}
@@ -141,7 +173,7 @@ export function Applications() {
               appNumber={app.appNumber}
               tagline={app.tagline}
               tagColor={app.tagColor}
-              delay={(index + 1) * 0.2}
+              delay={(index + 1) * 0.1}
               linkTo={app.linkTo}
             />
           ))}
