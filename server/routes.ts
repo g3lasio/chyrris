@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import { sendOTP, verifyOTP } from "./twilio";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -11,6 +12,53 @@ const contactSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Twilio OTP endpoints for Caymus Tanks mobile app
+  app.post("/api/otp/send", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          message: "Phone number is required"
+        });
+      }
+      
+      const result = await sendOTP(phoneNumber);
+      
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      console.error('Error in /api/otp/send:', error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while sending OTP"
+      });
+    }
+  });
+
+  app.post("/api/otp/verify", async (req, res) => {
+    try {
+      const { phoneNumber, code } = req.body;
+      
+      if (!phoneNumber || !code) {
+        return res.status(400).json({
+          success: false,
+          message: "Phone number and code are required"
+        });
+      }
+      
+      const result = await verifyOTP(phoneNumber, code);
+      
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      console.error('Error in /api/otp/verify:', error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while verifying OTP"
+      });
+    }
+  });
+
   // Contact form submission endpoint
   app.post("/api/contact", async (req, res) => {
     try {
