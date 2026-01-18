@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Home from "./pages/Home";
 import TzotzilBible from "./pages/TzotzilBible";
 import TzotzilBiblePrivacy from "./pages/TzotzilBiblePrivacy";
+import PocimaSalvajePrivacy from "./pages/PocimaSalvajePrivacy";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/tzotzil-bible" component={TzotzilBible} />
       <Route path="/tzotzil-bible/privacy" component={TzotzilBiblePrivacy} />
+      <Route path="/pocima-salvaje/privacy" component={PocimaSalvajePrivacy} />
       <Route component={NotFound} />
     </Switch>
   );

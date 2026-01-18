@@ -89,6 +89,13 @@ export const enTranslations = {
       tagline: "Financial Management",
       tag1: "Finance",
       tag2: "Corporate"
+    },
+    pocimaSalvaje: {
+      title: "Pócima Salvaje",
+      description: "Natural medicine and medicinal plants application with an AI-powered virtual doctor offering knowledge about traditional remedies and healing properties.",
+      tagline: "Natural Medicine",
+      tag1: "Medicinal Plants",
+      tag2: "Natural Health"
     }
   },
   contact: {

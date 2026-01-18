@@ -89,6 +89,13 @@ export const esTranslations = {
       tagline: "Gestión Financiera",
       tag1: "Finanzas",
       tag2: "Corporativo"
+    },
+    pocimaSalvaje: {
+      title: "Pócima Salvaje",
+      description: "Aplicación de medicina natural y plantas medicinales con un doctor virtual impulsado por IA que ofrece conocimiento sobre remedios tradicionales y propiedades curativas.",
+      tagline: "Medicina Natural",
+      tag1: "Plantas Medicinales",
+      tag2: "Salud Natural"
     }
   },
   contact: {
