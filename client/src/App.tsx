@@ -11,6 +11,7 @@ import TzotzilBiblePrivacy from "./pages/TzotzilBiblePrivacy";
 import PocimaSalvajePrivacy from "./pages/PocimaSalvajePrivacy";
 import CaymusTanks from "./pages/CaymusTanks";
 import CaymusTanksPrivacy from "./pages/CaymusTanksPrivacy";
+import CaymusTanksSupport from "./pages/CaymusTanksSupport";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/pocima-salvaje/privacy" component={PocimaSalvajePrivacy} />
       <Route path="/caymus-tanks" component={CaymusTanks} />
       <Route path="/caymus-tanks/privacy" component={CaymusTanksPrivacy} />
+      <Route path="/caymus-tanks/support" component={CaymusTanksSupport} />
       <Route component={NotFound} />
     </Switch>
   );
