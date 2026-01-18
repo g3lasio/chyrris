@@ -96,6 +96,13 @@ export const esTranslations = {
       tagline: "Medicina Natural",
       tag1: "Plantas Medicinales",
       tag2: "Salud Natural"
+    },
+    caymusTanks: {
+      title: "Caymus Tank Calculator",
+      description: "Calculadora profesional de tanques de vino para enológos. Calcula mediciones precisas, volúmenes y conversiones para la producción de vino con facilidad.",
+      tagline: "Herramienta Vinícola",
+      tag1: "Vinicultura",
+      tag2: "Profesional"
     }
   },
   contact: {

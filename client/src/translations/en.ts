@@ -96,6 +96,13 @@ export const enTranslations = {
       tagline: "Natural Medicine",
       tag1: "Medicinal Plants",
       tag2: "Natural Health"
+    },
+    caymusTanks: {
+      title: "Caymus Tank Calculator",
+      description: "Professional wine tank calculator for winemakers. Calculate precise measurements, volumes, and conversions for wine production with ease.",
+      tagline: "Wine Industry Tool",
+      tag1: "Winemaking",
+      tag2: "Professional"
     }
   },
   contact: {
