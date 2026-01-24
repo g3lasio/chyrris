@@ -9,6 +9,8 @@ import Home from "./pages/Home";
 import TzotzilBible from "./pages/TzotzilBible";
 import TzotzilBiblePrivacy from "./pages/TzotzilBiblePrivacy";
 import PocimaSalvajePrivacy from "./pages/PocimaSalvajePrivacy";
+import PocimaSalvajeTerms from "./pages/PocimaSalvajeTerms";
+import PocimaSalvajeSupport from "./pages/PocimaSalvajeSupport";
 import CaymusTanks from "./pages/CaymusTanks";
 import CaymusTanksPrivacy from "./pages/CaymusTanksPrivacy";
 import CaymusTanksSupport from "./pages/CaymusTanksSupport";
@@ -20,6 +22,8 @@ function Router() {
       <Route path="/tzotzil-bible" component={TzotzilBible} />
       <Route path="/tzotzil-bible/privacy" component={TzotzilBiblePrivacy} />
       <Route path="/pocima-salvaje/privacy" component={PocimaSalvajePrivacy} />
+      <Route path="/pocima-salvaje/terms" component={PocimaSalvajeTerms} />
+      <Route path="/pocima-salvaje/support" component={PocimaSalvajeSupport} />
       <Route path="/caymus-tanks" component={CaymusTanks} />
       <Route path="/caymus-tanks/privacy" component={CaymusTanksPrivacy} />
       <Route path="/caymus-tanks/support" component={CaymusTanksSupport} />
