@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Home from "./pages/Home";
 import TzotzilBible from "./pages/TzotzilBible";
 import TzotzilBiblePrivacy from "./pages/TzotzilBiblePrivacy";
+import PocimaSalvaje from "./pages/PocimaSalvaje";
 import PocimaSalvajePrivacy from "./pages/PocimaSalvajePrivacy";
 import PocimaSalvajeTerms from "./pages/PocimaSalvajeTerms";
 import PocimaSalvajeSupport from "./pages/PocimaSalvajeSupport";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/tzotzil-bible" component={TzotzilBible} />
       <Route path="/tzotzil-bible/privacy" component={TzotzilBiblePrivacy} />
+      <Route path="/pocima-salvaje" component={PocimaSalvaje} />
       <Route path="/pocima-salvaje/privacy" component={PocimaSalvajePrivacy} />
       <Route path="/pocima-salvaje/terms" component={PocimaSalvajeTerms} />
       <Route path="/pocima-salvaje/support" component={PocimaSalvajeSupport} />

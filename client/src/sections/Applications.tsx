@@ -16,7 +16,10 @@ export function Applications() {
 
   const pocimaContent = {
     comingSoon: currentLanguage === 'en' ? 'Coming Soon' : 'Próximamente',
-    privacyPolicy: currentLanguage === 'en' ? 'Privacy Policy' : 'Política de Privacidad'
+    viewDetails: currentLanguage === 'en' ? 'View Details' : 'Ver Detalles',
+    privacyPolicy: currentLanguage === 'en' ? 'Privacy Policy' : 'Política de Privacidad',
+    terms: currentLanguage === 'en' ? 'Terms' : 'Términos',
+    support: currentLanguage === 'en' ? 'Support' : 'Soporte'
   };
 
   const caymusContent = {
@@ -219,26 +222,47 @@ export function Applications() {
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2 pt-3 border-t border-[#35ffdd]/10">
-                <div 
-                  className="w-full py-2 px-3 bg-[#35ffdd]/10 text-[#35ffdd]/60 text-center rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 cursor-not-allowed"
-                >
-                  {pocimaContent.comingSoon}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                
-                <Link href="/pocima-salvaje/privacy">
+                <Link href="/pocima-salvaje">
                   <div 
-                    className="w-full py-2 px-3 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1"
-                    data-testid="button-pocima-privacy"
+                    className="w-full py-2 px-3 bg-gradient-to-r from-[#35ffdd] to-[#4cc4ff] hover:opacity-90 text-[#0a0d12] text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity flex items-center justify-center gap-1 cursor-pointer"
+                    data-testid="button-pocima-details"
                   >
-                    {pocimaContent.privacyPolicy}
+                    {pocimaContent.viewDetails}
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </div>
                 </Link>
+                
+                <div className="grid grid-cols-3 gap-1">
+                  <Link href="/pocima-salvaje/privacy">
+                    <div 
+                      className="w-full py-1.5 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                      data-testid="button-pocima-privacy"
+                      title={pocimaContent.privacyPolicy}
+                    >
+                      Privacy
+                    </div>
+                  </Link>
+                  <Link href="/pocima-salvaje/terms">
+                    <div 
+                      className="w-full py-1.5 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                      data-testid="button-pocima-terms"
+                      title={pocimaContent.terms}
+                    >
+                      Terms
+                    </div>
+                  </Link>
+                  <Link href="/pocima-salvaje/support">
+                    <div 
+                      className="w-full py-1.5 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                      data-testid="button-pocima-support"
+                      title={pocimaContent.support}
+                    >
+                      Support
+                    </div>
+                  </Link>
+                </div>
               </div>
             </div>
           </motion.div>
