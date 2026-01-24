@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { sendOTP, verifyOTP } from "./twilio";
+import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -87,6 +88,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "An error occurred while processing your request"
       });
     }
+  });
+
+  // MolDoctor API endpoints for Pocima Salvaje mobile app
+  app.post("/api/moldoctor/chat", moldoctorChat);
+  app.post("/api/moldoctor/analyze-lab", analyzeLabDocument);
+
+  // Health check endpoint
+  app.get("/api/health", (_req, res) => {
+    res.json({ ok: true, timestamp: Date.now() });
   });
 
   const httpServer = createServer(app);
