@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { sendOTP, verifyOTP } from "./twilio";
 import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
+import { validateAppleReceipt, checkSubscriptionStatus, handleAppleNotification } from "./apple-iap";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -93,6 +94,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // MolDoctor API endpoints for Pocima Salvaje mobile app
   app.post("/api/moldoctor/chat", moldoctorChat);
   app.post("/api/moldoctor/analyze-lab", analyzeLabDocument);
+
+  // Apple In-App Purchase endpoints for Caymus Tanks mobile app
+  app.post("/api/subscription/validate", async (req, res) => {
+    try {
+      const { platform, productId, transactionReceipt, orderId } = req.body;
+      
+      if (platform !== 'ios') {
+        return res.status(400).json({
+          success: false,
+          message: "Only iOS platform is supported"
+        });
+      }
+      
+      if (!transactionReceipt || !productId || !orderId) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required fields: transactionReceipt, productId, orderId"
+        });
+      }
+      
+      const result = await validateAppleReceipt({
+        receiptData: transactionReceipt,
+        productId,
+        transactionId: orderId,
+        platform: 'ios',
+      });
+      
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      console.error('Error in /api/subscription/validate:', error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while validating subscription"
+      });
+    }
+  });
+
+  app.post("/api/subscription/check", async (req, res) => {
+    try {
+      const { transactionId, receiptData, productId } = req.body;
+      
+      if (!transactionId || !receiptData || !productId) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required fields: transactionId, receiptData, productId"
+        });
+      }
+      
+      const result = await checkSubscriptionStatus(transactionId, receiptData, productId);
+      
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      console.error('Error in /api/subscription/check:', error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while checking subscription"
+      });
+    }
+  });
+
+  // Apple Server-to-Server Notification endpoint (webhook)
+  app.post("/api/subscription/apple-webhook", async (req, res) => {
+    try {
+      await handleAppleNotification(req.body);
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error in /api/subscription/apple-webhook:', error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while processing notification"
+      });
+    }
+  });
 
   // Health check endpoint
   app.get("/api/health", (_req, res) => {
