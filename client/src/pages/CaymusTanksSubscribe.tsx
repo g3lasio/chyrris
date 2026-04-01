@@ -16,7 +16,6 @@ import { Footer } from "../sections/Footer";
 
 // Precio de suscripción mensual
 const MONTHLY_PRICE = "$6.99";
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/caymus-monthly"; // Reemplazar con el link real de Stripe
 
 export default function CaymusTanksSubscribe() {
   const [location] = useLocation();
@@ -98,11 +97,29 @@ export default function CaymusTanksSubscribe() {
   const isSuccess = params.get("success") === "true";
   const isCanceled = params.get("canceled") === "true";
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     setIsLoading(true);
-    // Construir URL de Stripe con el teléfono como metadata
-    const stripeUrl = `${STRIPE_PAYMENT_LINK}?prefilled_phone=${encodeURIComponent(phone)}&client_reference_id=${encodeURIComponent(phone)}`;
-    window.location.href = stripeUrl;
+    try {
+      // Llamar al backend para crear una Stripe Checkout Session
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, lang }),
+      });
+      const data = await response.json();
+      if (!data.success || !data.url) {
+        throw new Error(data.message || 'Error al crear la sesión de pago');
+      }
+      // Redirigir a Stripe Checkout
+      window.location.href = data.url;
+    } catch (err: any) {
+      console.error('Error creating checkout:', err);
+      alert(lang === 'es'
+        ? `Error: ${err.message || 'No se pudo iniciar el pago. Intenta de nuevo.'}`
+        : `Error: ${err.message || 'Could not start payment. Please try again.'}`
+      );
+      setIsLoading(false);
+    }
   };
 
   const handleReturnToApp = () => {

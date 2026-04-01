@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { sendOTP, verifyOTP } from "./twilio";
 import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
 import { validateAppleReceipt, checkSubscriptionStatus, handleAppleNotification } from "./apple-iap";
+import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus } from "./stripe";
 
 // ============================================================================
 // USERS DATABASE (JSON file storage for Caymus Tanks users)
@@ -360,6 +361,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: "An error occurred while processing notification"
       });
+    }
+  });
+
+  // ============================================================================
+  // STRIPE ENDPOINTS for Caymus Tanks subscriptions
+  // ============================================================================
+
+  /**
+   * POST /api/stripe/create-checkout
+   * Crea una Stripe Checkout Session y devuelve la URL de pago.
+   * Body: { phone, lang? }
+   */
+  app.post("/api/stripe/create-checkout", async (req: Request, res: Response) => {
+    try {
+      const { phone, lang } = req.body;
+      if (!phone) {
+        return res.status(400).json({ success: false, message: 'Phone number is required' });
+      }
+      const { url, sessionId } = await createCheckoutSession(phone, lang || 'es');
+      return res.json({ success: true, url, sessionId });
+    } catch (error: any) {
+      console.error('Error creating Stripe checkout:', error);
+      return res.status(500).json({ success: false, message: error.message || 'Error creating checkout session' });
+    }
+  });
+
+  /**
+   * POST /api/stripe/webhook
+   * Recibe eventos de Stripe (pagos, cancelaciones, renovaciones).
+   * Activa/desactiva suscripciones automáticamente.
+   * IMPORTANT: Must use raw body for signature verification.
+   */
+  app.post("/api/stripe/webhook",
+    // Raw body middleware specifically for this route
+    (req: Request, res: Response, next: Function) => {
+      let rawBody = Buffer.alloc(0);
+      req.on('data', (chunk: Buffer) => {
+        rawBody = Buffer.concat([rawBody, chunk]);
+      });
+      req.on('end', () => {
+        (req as any).rawBody = rawBody;
+        next();
+      });
+    },
+    async (req: Request, res: Response) => {
+      try {
+        const signature = req.headers['stripe-signature'] as string;
+        if (!signature) {
+          return res.status(400).json({ error: 'Missing stripe-signature header' });
+        }
+        const rawBody = (req as any).rawBody as Buffer;
+        const result = await handleStripeWebhook(rawBody, signature);
+        return res.json(result);
+      } catch (error: any) {
+        console.error('Stripe webhook error:', error.message);
+        return res.status(400).json({ error: error.message });
+      }
+    }
+  );
+
+  /**
+   * GET /api/stripe/subscription-status?phone=+1234567890
+   * Devuelve el estado de suscripción de un usuario.
+   */
+  app.get("/api/stripe/subscription-status", (req: Request, res: Response) => {
+    try {
+      const { phone } = req.query;
+      if (!phone || typeof phone !== 'string') {
+        return res.status(400).json({ success: false, message: 'Phone is required' });
+      }
+      const status = getSubscriptionStatus(phone);
+      return res.json({ success: true, ...status });
+    } catch (error: any) {
+      console.error('Error getting subscription status:', error);
+      return res.status(500).json({ success: false, message: error.message });
     }
   });
 
