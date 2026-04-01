@@ -17,6 +17,7 @@ import PocimaSalvajeSupport from "./pages/PocimaSalvajeSupport";
 import CaymusTanks from "./pages/CaymusTanks";
 import CaymusTanksPrivacy from "./pages/CaymusTanksPrivacy";
 import CaymusTanksSupport from "./pages/CaymusTanksSupport";
+import CaymusTanksSubscribe from "./pages/CaymusTanksSubscribe";
 
 function Router() {
   return (
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/caymus-tanks" component={CaymusTanks} />
       <Route path="/caymus-tanks/privacy" component={CaymusTanksPrivacy} />
       <Route path="/caymus-tanks/support" component={CaymusTanksSupport} />
+      <Route path="/caymus-tanks/subscribe" component={CaymusTanksSubscribe} />
       <Route component={NotFound} />
     </Switch>
   );
