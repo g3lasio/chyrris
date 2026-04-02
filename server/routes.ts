@@ -25,7 +25,7 @@ interface CaymusUser {
   isOwner: boolean;
   registeredAt: string;
   lastLogin: string;
-  subscriptionStatus: 'none' | 'pending' | 'active' | 'expired';
+  subscriptionStatus: 'none' | 'pending' | 'active' | 'expired' | 'past_due' | 'cancelled';
   subscriptionExpiry?: string;
 }
 
