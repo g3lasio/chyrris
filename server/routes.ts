@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 import { sendOTP, verifyOTP } from "./twilio";
 import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
 import { validateAppleReceipt, checkSubscriptionStatus, handleAppleNotification } from "./apple-iap";
-import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus } from "./stripe";
+import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus, createCustomerPortalSession } from "./stripe";
 
 // ============================================================================
 // USERS DATABASE (JSON file storage for Caymus Tanks users)
@@ -388,6 +388,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   /**
+   * GET /api/stripe/customer-portal?phone=+1234567890
+   * Redirige al portal de Stripe para gestionar/cancelar suscripción.
+   */
+  app.get("/api/stripe/customer-portal", async (req: Request, res: Response) => {
+    try {
+      const { phone } = req.query;
+      if (!phone || typeof phone !== 'string') {
+        return res.status(400).json({ success: false, message: 'Phone number is required' });
+      }
+      const { url } = await createCustomerPortalSession(phone);
+      return res.redirect(url);
+    } catch (error: any) {
+      console.error('Error creating customer portal session:', error);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+    /**
    * POST /api/stripe/webhook
    * Recibe eventos de Stripe (pagos, cancelaciones, renovaciones).
    * Activa/desactiva suscripciones automáticamente.
