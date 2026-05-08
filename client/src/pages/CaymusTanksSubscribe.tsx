@@ -14,13 +14,17 @@ import { motion } from "framer-motion";
 import { ParticleBackground } from "../components/ParticleBackground";
 import { Footer } from "../sections/Footer";
 
-// Precio de suscripción mensual
+// Pricing: annual is the default plan; monthly remains as an advanced option.
 const MONTHLY_PRICE = "$6.99";
+const ANNUAL_PRICE = "$75.49";
+const ANNUAL_SAVINGS = "10%";
 
 export default function CaymusTanksSubscribe() {
   const [location] = useLocation();
   const [phone, setPhone] = useState<string>("");
   const [lang, setLang] = useState<"es" | "en">("es");
+  const [sessionToken, setSessionToken] = useState<string>("");
+  const [showMonthlyOption, setShowMonthlyOption] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -28,18 +32,29 @@ export default function CaymusTanksSubscribe() {
     const params = new URLSearchParams(window.location.search);
     const phoneParam = params.get("phone") || "";
     const langParam = params.get("lang") || "es";
+    const tokenParam = params.get("sessionToken") || sessionStorage.getItem("caymusSessionToken") || "";
+    if (tokenParam) {
+      sessionStorage.setItem("caymusSessionToken", tokenParam);
+    }
     setPhone(phoneParam);
     setLang(langParam === "en" ? "en" : "es");
+    setSessionToken(tokenParam);
+
+    if (params.has("sessionToken")) {
+      params.delete("sessionToken");
+      const cleanQuery = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${cleanQuery ? `?${cleanQuery}` : ""}`);
+    }
   }, []);
 
   const t = {
     es: {
       title: "Suscripción Caymus Pro",
-      subtitle: "Gestiona tu suscripción mensual",
+      subtitle: "Plan anual recomendado con opción mensual avanzada",
       description:
-        "Accede a todas las funciones de la calculadora de tanques de vino con una suscripción mensual.",
-      priceLabel: "Suscripción Mensual",
-      priceNote: "Se renueva automáticamente. Cancela cuando quieras.",
+        "Accede a todas las funciones de la calculadora de tanques de vino con una suscripción anual con descuento.",
+      priceLabel: "Plan Anual Recomendado",
+      priceNote: `Incluye ${ANNUAL_SAVINGS} de descuento frente al pago mensual. Se renueva automáticamente cada año.`,
       features: [
         "✓ Cálculos ilimitados de tanques",
         "✓ Historial de cálculos guardado",
@@ -48,7 +63,10 @@ export default function CaymusTanksSubscribe() {
         "✓ Sin anuncios",
         "✓ Acceso completo a todos los tanques",
       ],
-      subscribeButton: "Suscribirse Ahora",
+      subscribeButton: "Suscribirse Anualmente",
+      monthlyButton: "Prefiero pagar mensual (opción avanzada)",
+      monthlySubscribeButton: "Continuar con plan mensual",
+      missingSession: "Tu sesión de verificación expiró. Regresa a la app, verifica tu número nuevamente y vuelve a intentarlo.",
       manageButton: "Gestionar Suscripción Existente",
       cancelButton: "Cancelar Suscripción",
       backButton: "← Volver a la App",
@@ -63,11 +81,11 @@ export default function CaymusTanksSubscribe() {
     },
     en: {
       title: "Caymus Pro Subscription",
-      subtitle: "Manage your monthly subscription",
+      subtitle: "Recommended annual plan with advanced monthly option",
       description:
-        "Access all wine tank calculator features with a monthly subscription.",
-      priceLabel: "Monthly Subscription",
-      priceNote: "Automatically renews. Cancel anytime.",
+        "Access all wine tank calculator features with a discounted annual subscription.",
+      priceLabel: "Recommended Annual Plan",
+      priceNote: `${ANNUAL_SAVINGS} discount compared with monthly payments. Automatically renews every year.`,
       features: [
         "✓ Unlimited tank calculations",
         "✓ Saved calculation history",
@@ -76,7 +94,10 @@ export default function CaymusTanksSubscribe() {
         "✓ No ads",
         "✓ Full access to all tanks",
       ],
-      subscribeButton: "Subscribe Now",
+      subscribeButton: "Subscribe Annually",
+      monthlyButton: "I prefer monthly billing (advanced option)",
+      monthlySubscribeButton: "Continue with monthly plan",
+      missingSession: "Your verification session expired. Return to the app, verify your number again, and retry.",
       manageButton: "Manage Existing Subscription",
       cancelButton: "Cancel Subscription",
       backButton: "← Back to App",
@@ -97,14 +118,22 @@ export default function CaymusTanksSubscribe() {
   const isSuccess = params.get("success") === "true";
   const isCanceled = params.get("canceled") === "true";
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (planInterval: "year" | "month" = "year") => {
+    if (!sessionToken) {
+      alert(content.missingSession);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Llamar al backend para crear una Stripe Checkout Session
       const response = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, lang }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-caymus-session-token': sessionToken,
+        },
+        body: JSON.stringify({ phone, lang, planInterval }),
       });
       const data = await response.json();
       if (!data.success || !data.url) {
@@ -190,8 +219,8 @@ export default function CaymusTanksSubscribe() {
                 {content.priceLabel}
               </p>
               <p className="text-6xl font-bold text-[#00d4ff] mb-2">
-                {MONTHLY_PRICE}
-                <span className="text-2xl text-[#8892b0]">/mes</span>
+                {ANNUAL_PRICE}
+                <span className="text-2xl text-[#8892b0]">/año</span>
               </p>
               <p className="text-[#ccd6f6] text-sm">{content.priceNote}</p>
             </motion.div>
@@ -227,7 +256,7 @@ export default function CaymusTanksSubscribe() {
               )}
 
               <button
-                onClick={handleSubscribe}
+                onClick={() => handleSubscribe("year")}
                 disabled={isLoading}
                 className="w-full bg-[#00d4ff] text-[#0a1628] font-bold py-5 rounded-xl text-xl mb-4 hover:bg-[#00b8d9] transition-colors disabled:opacity-60 shadow-lg shadow-[#00d4ff]/30"
               >
@@ -237,6 +266,29 @@ export default function CaymusTanksSubscribe() {
                     : "Redirecting..."
                   : content.subscribeButton}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setShowMonthlyOption((current) => !current)}
+                className="w-full border border-[#1e3a5f] text-[#8892b0] font-semibold py-3 rounded-xl text-sm mb-3 hover:border-[#00d4ff] hover:text-[#00d4ff] transition-colors"
+              >
+                {content.monthlyButton}
+              </button>
+
+              {showMonthlyOption && (
+                <div className="bg-[#112240] border border-[#1e3a5f] rounded-xl p-4 mb-4 text-center">
+                  <p className="text-[#ccd6f6] text-sm mb-3">
+                    {MONTHLY_PRICE}<span className="text-[#8892b0]">/mes</span>
+                  </p>
+                  <button
+                    onClick={() => handleSubscribe("month")}
+                    disabled={isLoading}
+                    className="w-full border border-[#00d4ff] text-[#00d4ff] font-semibold py-3 rounded-xl text-sm hover:bg-[#00d4ff] hover:text-[#0a1628] transition-colors disabled:opacity-60"
+                  >
+                    {content.monthlySubscribeButton}
+                  </button>
+                </div>
+              )}
 
               <p className="text-center text-[#8892b0] text-sm mb-2">
                 {content.secureNote}

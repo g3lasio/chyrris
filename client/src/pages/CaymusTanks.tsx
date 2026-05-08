@@ -62,10 +62,10 @@ export default function CaymusTanks() {
       }
     ],
     
-    pricingTitle: currentLanguage === 'en' ? 'Simple Pricing' : 'Precio Simple',
-    pricingSubtitle: currentLanguage === 'en' ? 'One plan, full access' : 'Un plan, acceso completo',
-    price: '$5.99',
-    priceUnit: currentLanguage === 'en' ? '/month' : '/mes',
+    pricingTitle: currentLanguage === 'en' ? 'Annual Plan Recommended' : 'Plan Anual Recomendado',
+    pricingSubtitle: currentLanguage === 'en' ? 'Best value for year-round access; monthly remains available as an advanced option' : 'Mejor valor para acceso todo el año; mensual queda disponible como opción avanzada',
+    price: '$75.49',
+    priceUnit: currentLanguage === 'en' ? '/year' : '/año',
     pricingFeatures: currentLanguage === 'en' 
       ? [
           'Full access to all calculator features',
@@ -73,7 +73,9 @@ export default function CaymusTanks() {
           'Calculation history',
           'Bilingual support (EN/ES)',
           'Regular updates and improvements',
-          'Cancel anytime'
+          '10% discount versus paying monthly',
+          'Monthly $6.99 option available in checkout',
+          'Manage billing securely through Chyrris / Stripe'
         ]
       : [
           'Acceso completo a todas las funciones de la calculadora',
@@ -81,14 +83,16 @@ export default function CaymusTanks() {
           'Historial de cálculos',
           'Soporte bilingüe (EN/ES)',
           'Actualizaciones y mejoras regulares',
-          'Cancela cuando quieras'
+          '10% de descuento frente al pago mensual',
+          'Opción mensual de $6.99 disponible en checkout',
+          'Gestiona tu pago de forma segura con Chyrris / Stripe'
         ],
     
     ctaTitle: currentLanguage === 'en' ? 'Ready to Get Started?' : '¿Listo para Comenzar?',
     ctaDescription: currentLanguage === 'en' 
-      ? 'Download Caymus Tank Calculator from the App Store and streamline your wine production calculations today.'
-      : 'Descarga Caymus Tank Calculator desde la App Store y optimiza tus cálculos de producción de vino hoy.',
-    ctaButton: currentLanguage === 'en' ? 'Coming Soon to App Store' : 'Próximamente en App Store',
+      ? 'Download Caymus Tank Calculator and activate your subscription securely through Chyrris to streamline your wine production calculations today.'
+      : 'Descarga Caymus Tank Calculator y activa tu suscripción de forma segura con Chyrris para optimizar tus cálculos de producción de vino hoy.',
+    ctaButton: currentLanguage === 'en' ? 'Subscribe Securely' : 'Suscribirme de forma segura',
     
     privacyLink: currentLanguage === 'en' ? 'Privacy Policy' : 'Política de Privacidad',
     backToHome: currentLanguage === 'en' ? 'Back to Home' : 'Volver al Inicio'
@@ -231,9 +235,11 @@ export default function CaymusTanks() {
             </ul>
             
             <div className="text-center">
-              <div className="py-3 px-6 bg-[#8b5cf6]/20 text-[#8b5cf6] rounded-lg font-semibold">
-                {content.ctaButton}
-              </div>
+              <Link href="/caymus-tanks/subscribe">
+                <div className="py-3 px-6 bg-[#8b5cf6]/20 text-[#8b5cf6] rounded-lg font-semibold cursor-pointer hover:bg-[#8b5cf6]/30 transition-colors">
+                  {content.ctaButton}
+                </div>
+              </Link>
             </div>
           </motion.div>
         </div>

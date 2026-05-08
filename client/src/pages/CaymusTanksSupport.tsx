@@ -1,8 +1,4 @@
-import { useLanguage } from '../hooks/useLanguage';
-
 export default function CaymusTanksSupport() {
-  const { t } = useLanguage();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#1a2332] to-[#0a1628] text-white">
       <div className="max-w-4xl mx-auto px-6 py-16">
@@ -42,7 +38,7 @@ export default function CaymusTanksSupport() {
               <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10">
                 <h3 className="text-xl font-semibold mb-2">How do I cancel my subscription?</h3>
                 <p className="text-gray-300">
-                  You can cancel your subscription at any time through your App Store account settings. Go to Settings → Your Name → Subscriptions → Caymus Tank Calculator → Cancel Subscription. You will lose access immediately upon cancellation.
+                  You can manage or cancel your subscription at any time through the secure Chyrris billing portal. Open the subscription screen from the app, choose Manage Billing, and follow the Stripe portal instructions. If a renewal payment fails, access may remain available for a 3-day grace period before being restricted.
                 </p>
               </div>
 

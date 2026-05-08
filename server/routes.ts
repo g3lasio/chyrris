@@ -9,6 +9,14 @@ import { sendOTP, verifyOTP } from "./twilio";
 import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
 import { validateAppleReceipt, checkSubscriptionStatus, handleAppleNotification } from "./apple-iap";
 import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus, createCustomerPortalSession } from "./stripe";
+import {
+  createCaymusSession,
+  getCaymusAccessStatus,
+  isOwnerPhone as isConfiguredOwnerPhone,
+  normalizePhone as normalizeCaymusPhone,
+  requireCaymusSession,
+  upsertCaymusUser,
+} from "./caymus-access";
 
 // ============================================================================
 // USERS DATABASE (JSON file storage for Caymus Tanks users)
@@ -59,19 +67,11 @@ async function saveCaymusUsers(users: CaymusUser[]): Promise<void> {
 
 // Normalize phone number for consistent storage
 function normalizePhone(phone: string): string {
-  let cleaned = phone.replace(/[^\d+]/g, '');
-  if (!cleaned.startsWith('+')) {
-    if (cleaned.length === 10) cleaned = '+1' + cleaned;
-    else if (cleaned.length === 11 && cleaned.startsWith('1')) cleaned = '+' + cleaned;
-    else cleaned = '+1' + cleaned;
-  }
-  return cleaned;
+  return normalizeCaymusPhone(phone);
 }
 
-// Owner phone numbers (must match authService.ts in mobile app)
-const OWNER_PHONES = [
-  '+12025493519',  // Número del propietario principal
-];
+// Owner access is centralized in caymus-access.ts and controlled by Railway env:
+// CAYMUS_OWNER_PHONES=+12025493519. Do not add mobile-side owner bypasses.
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -117,8 +117,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const result = await verifyOTP(phoneNumber, code);
-      
-      return res.status(result.success ? 200 : 400).json(result);
+
+      if (!result.success) {
+        return res.status(400).json(result);
+      }
+
+      const normalizedPhone = normalizePhone(phoneNumber);
+      const session = createCaymusSession(normalizedPhone);
+      upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
+      const access = getCaymusAccessStatus(normalizedPhone);
+
+      return res.status(200).json({
+        ...result,
+        phone: normalizedPhone,
+        sessionToken: session.token,
+        sessionExpiresAt: session.expiresAt,
+        isOwner: access.isOwner,
+        subscriptionStatus: access.status === 'owner' ? 'active' : access.status,
+        hasAccess: access.hasAccess,
+        isInGracePeriod: access.isInGracePeriod,
+        graceEndsAt: access.graceEndsAt,
+      });
     } catch (error) {
       console.error('Error in /api/otp/verify:', error);
       return res.status(500).json({
@@ -144,30 +163,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Phone number is required' });
       }
       const normalizedPhone = normalizePhone(phone);
-      const isOwner = OWNER_PHONES.includes(normalizedPhone);
-      const users = await getCaymusUsers();
-      const user = users.find(u => u.phone === normalizedPhone);
-      if (!user && !isOwner) {
-        return res.json({
-          success: true,
-          isRegistered: false,
-          isOwner: false,
-          userName: null,
-          subscriptionStatus: 'none',
-        });
-      }
-      // Update last login
-      if (user) {
-        user.lastLogin = new Date().toISOString();
-        await saveCaymusUsers(users);
-      }
+      const session = requireCaymusSession(req, res, normalizedPhone);
+      if (!session) return;
+
+      const user = upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
+      const access = getCaymusAccessStatus(normalizedPhone);
+
       return res.json({
         success: true,
-        isRegistered: !!user,
-        isOwner,
-        userName: user?.name || null,
-        subscriptionStatus: isOwner ? 'active' : (user?.subscriptionStatus || 'none'),
-        subscriptionExpiry: user?.subscriptionExpiry || null,
+        isRegistered: !!user.name || access.isOwner,
+        isOwner: access.isOwner,
+        userName: user.name || null,
+        subscriptionStatus: access.status === 'owner' ? 'active' : access.status,
+        subscriptionExpiry: access.expiry || null,
+        hasAccess: access.hasAccess,
+        isInGracePeriod: access.isInGracePeriod,
+        graceEndsAt: access.graceEndsAt || null,
+        daysRemaining: access.daysRemaining || null,
+        planInterval: access.planInterval || null,
       });
     } catch (error) {
       console.error('Error in /api/users/profile:', error);
@@ -190,32 +203,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Name must be at least 2 characters' });
       }
       const normalizedPhone = normalizePhone(phone);
-      const isOwner = OWNER_PHONES.includes(normalizedPhone);
-      const users = await getCaymusUsers();
-      const existingIndex = users.findIndex(u => u.phone === normalizedPhone);
-      if (existingIndex >= 0) {
-        // Update existing user
-        users[existingIndex].name = name.trim();
-        users[existingIndex].lastLogin = new Date().toISOString();
-        if (isOwner) users[existingIndex].subscriptionStatus = 'active';
-      } else {
-        // Create new user
-        const newUser: CaymusUser = {
-          phone: normalizedPhone,
-          name: name.trim(),
-          isOwner,
-          registeredAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
-          subscriptionStatus: isOwner ? 'active' : 'pending',
-        };
-        users.push(newUser);
-      }
-      await saveCaymusUsers(users);
+      const session = requireCaymusSession(req, res, normalizedPhone);
+      if (!session) return;
+
+      const isOwner = isConfiguredOwnerPhone(normalizedPhone);
+      const user = upsertCaymusUser(normalizedPhone, {
+        name: name.trim(),
+        lastLogin: new Date().toISOString(),
+        subscriptionStatus: isOwner ? 'active' : 'pending',
+      });
+      const access = getCaymusAccessStatus(normalizedPhone);
+
       return res.json({
         success: true,
         message: `¡Bienvenido, ${name.trim()}!`,
-        isOwner,
-        subscriptionStatus: isOwner ? 'active' : 'pending',
+        isOwner: access.isOwner,
+        subscriptionStatus: access.status === 'owner' ? 'active' : user.subscriptionStatus,
+        hasAccess: access.hasAccess,
       });
     } catch (error) {
       console.error('Error in /api/users/register:', error);
@@ -230,26 +234,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
    */
   app.post("/api/subscription/activate", async (req, res) => {
     try {
+      const adminSecret = process.env.CAYMUS_ADMIN_SECRET;
+      const providedSecret = req.header('x-caymus-admin-secret');
+      if (!adminSecret || providedSecret !== adminSecret) {
+        return res.status(403).json({ success: false, message: 'Manual activation is disabled' });
+      }
+
       const { phone, expiresAt } = req.body;
       if (!phone) {
         return res.status(400).json({ success: false, message: 'Phone is required' });
       }
       const normalizedPhone = normalizePhone(phone);
-      const users = await getCaymusUsers();
-      const userIndex = users.findIndex(u => u.phone === normalizedPhone);
-      if (userIndex < 0) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-      }
-      users[userIndex].subscriptionStatus = 'active';
-      if (expiresAt) {
-        users[userIndex].subscriptionExpiry = expiresAt;
-      } else {
-        // Default: 30 days from now
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + 30);
-        users[userIndex].subscriptionExpiry = expiry.toISOString();
-      }
-      await saveCaymusUsers(users);
+      const expiry = expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      upsertCaymusUser(normalizedPhone, {
+        subscriptionStatus: 'active',
+        subscriptionExpiry: expiry.toISOString(),
+        paymentPastDueAt: undefined,
+        graceEndsAt: undefined,
+      });
       return res.json({ success: true, message: 'Subscription activated' });
     } catch (error) {
       console.error('Error in /api/subscription/activate:', error);
@@ -375,11 +377,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
    */
   app.post("/api/stripe/create-checkout", async (req: Request, res: Response) => {
     try {
-      const { phone, lang } = req.body;
+      const { phone, lang, planInterval } = req.body;
       if (!phone) {
         return res.status(400).json({ success: false, message: 'Phone number is required' });
       }
-      const { url, sessionId } = await createCheckoutSession(phone, lang || 'es');
+      const normalizedPhone = normalizePhone(phone);
+      const session = requireCaymusSession(req, res, normalizedPhone);
+      if (!session) return;
+      const selectedPlan = planInterval === 'month' ? 'month' : 'year';
+      const { url, sessionId } = await createCheckoutSession(normalizedPhone, lang || 'es', selectedPlan);
       return res.json({ success: true, url, sessionId });
     } catch (error: any) {
       console.error('Error creating Stripe checkout:', error);
@@ -397,7 +403,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!phone || typeof phone !== 'string') {
         return res.status(400).json({ success: false, message: 'Phone number is required' });
       }
-      const { url } = await createCustomerPortalSession(phone);
+      const normalizedPhone = normalizePhone(phone);
+      const session = requireCaymusSession(req, res, normalizedPhone);
+      if (!session) return;
+      const { url } = await createCustomerPortalSession(normalizedPhone);
       return res.redirect(url);
     } catch (error: any) {
       console.error('Error creating customer portal session:', error);
@@ -449,7 +458,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!phone || typeof phone !== 'string') {
         return res.status(400).json({ success: false, message: 'Phone is required' });
       }
-      const status = getSubscriptionStatus(phone);
+      const normalizedPhone = normalizePhone(phone);
+      const session = requireCaymusSession(req, res, normalizedPhone);
+      if (!session) return;
+      const status = getSubscriptionStatus(normalizedPhone);
       return res.json({ success: true, ...status });
     } catch (error: any) {
       console.error('Error getting subscription status:', error);

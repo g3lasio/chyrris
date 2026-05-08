@@ -3,27 +3,28 @@
  * Chyrris Technologies Inc.
  *
  * Handles:
- * - Checkout session creation (redirect to Stripe hosted checkout)
+ * - Checkout session creation (annual by default, monthly as advanced option)
  * - Webhook processing (auto-activate subscription on payment)
- * - Monthly recurring billing with automatic charges
+ * - Recurring billing with automatic charges
  * - Customer portal for managing/cancelling subscriptions
- * - Subscription status queries
- *
- * IMPORTANT: Uses the SAME caymus-users.json file as routes.ts
- * Format: Array of CaymusUser objects (NOT a keyed object)
+ * - Subscription status queries with a 3-day grace period for failed payments
  */
 
 import Stripe from 'stripe';
-import fs from 'fs';
-import path from 'path';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
+import {
+  CAYMUS_GRACE_PERIOD_DAYS,
+  type CaymusSubscriptionStatus,
+  getCaymusAccessStatus,
+  normalizePhone,
+  upsertCaymusUser,
+} from './caymus-access';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
-const CAYMUS_PRICE_ID = process.env.CAYMUS_STRIPE_PRICE_ID || 'price_1THTCOBAAfD6dhk7EBL1Tj1R';
+const CAYMUS_MONTHLY_PRICE_ID = process.env.CAYMUS_STRIPE_MONTHLY_PRICE_ID || process.env.CAYMUS_STRIPE_PRICE_ID || 'price_1TUs7fBAAfD6dhk7A1Wy520E';
+const CAYMUS_ANNUAL_PRICE_ID = process.env.CAYMUS_STRIPE_ANNUAL_PRICE_ID || process.env.CAYMUS_STRIPE_YEARLY_PRICE_ID || 'price_1TUs7eBAAfD6dhk7oBJymLCZ';
 
-// ─── Stripe Client ─────────────────────────────────────────────────────────────
+export type CaymusPlanInterval = 'month' | 'year';
 
 let stripeClient: Stripe | null = null;
 
@@ -33,127 +34,85 @@ function getStripe(): Stripe {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set');
     }
     stripeClient = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: '2025-02-24.acacia',
+      apiVersion: '2026-03-25.dahlia',
     });
   }
   return stripeClient;
 }
 
-// ─── Users DB — SHARED with routes.ts (array format) ──────────────────────────
-
-const DATA_DIR = path.join(process.cwd(), '.data');
-const USERS_FILE = path.join(DATA_DIR, 'caymus-users.json');
-
-interface CaymusUser {
-  phone: string;
-  name: string;
-  isOwner: boolean;
-  registeredAt: string;
-  lastLogin: string;
-  subscriptionStatus: 'none' | 'pending' | 'active' | 'expired' | 'past_due' | 'cancelled';
-  subscriptionExpiry?: string;
-  subscriptionId?: string;
-  customerId?: string;
-}
-
-function loadUsers(): CaymusUser[] {
-  try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    if (!fs.existsSync(USERS_FILE)) return [];
-    const raw = fs.readFileSync(USERS_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    // Handle legacy object format (migrate to array)
-    if (!Array.isArray(parsed)) {
-      const arr: CaymusUser[] = Object.values(parsed).map((u: any) => ({
-        phone: u.phone || '',
-        name: u.name || '',
-        isOwner: u.isOwner || false,
-        registeredAt: u.registeredAt || new Date().toISOString(),
-        lastLogin: u.lastLogin || new Date().toISOString(),
-        subscriptionStatus: u.subscriptionStatus || 'none',
-        subscriptionExpiry: u.subscriptionExpiry,
-        subscriptionId: u.subscriptionId,
-        customerId: u.customerId,
-      }));
-      fs.writeFileSync(USERS_FILE, JSON.stringify(arr, null, 2));
-      return arr;
+function getPriceId(planInterval: CaymusPlanInterval): string {
+  if (planInterval === 'year') {
+    if (!CAYMUS_ANNUAL_PRICE_ID) {
+      throw new Error('Annual Stripe price is not configured. Set CAYMUS_STRIPE_ANNUAL_PRICE_ID in Railway.');
     }
-    return parsed;
-  } catch {
-    return [];
+    return CAYMUS_ANNUAL_PRICE_ID;
   }
+  return CAYMUS_MONTHLY_PRICE_ID;
 }
 
-function saveUsers(users: CaymusUser[]): void {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+function getSubscriptionPeriodEnd(subscription: Stripe.Subscription): string {
+  const periodEnd = (subscription as any).current_period_end;
+  return new Date(periodEnd * 1000).toISOString();
 }
 
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, '');
+function getSubscriptionPlanInterval(subscription: Stripe.Subscription): CaymusPlanInterval | undefined {
+  const interval = subscription.items?.data?.[0]?.price?.recurring?.interval;
+  return interval === 'year' ? 'year' : interval === 'month' ? 'month' : undefined;
 }
 
-// ─── Create Checkout Session ───────────────────────────────────────────────────
+function getSubscriptionPhone(subscription: Stripe.Subscription): string {
+  return normalizePhone(subscription.metadata?.phone || '');
+}
+
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
 
 /**
  * Creates a Stripe Checkout Session for Caymus Tanks Pro subscription.
- * The subscription is monthly ($6.99/month) with automatic recurring charges.
+ * Annual is the default plan; monthly is retained as an advanced option.
  */
 export async function createCheckoutSession(
   phone: string,
-  lang: string = 'es'
+  lang: string = 'es',
+  planInterval: CaymusPlanInterval = 'year'
 ): Promise<{ url: string; sessionId: string }> {
   const stripe = getStripe();
   const normalizedPhone = normalizePhone(phone);
+  const selectedPlan = planInterval === 'month' ? 'month' : 'year';
+  const priceId = getPriceId(selectedPlan);
 
-  const users = loadUsers();
-  let user = users.find(u => u.phone === normalizedPhone);
-  let customerId = user?.customerId;
+  const user = upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
+  let customerId = user.customerId;
 
-  // Create or reuse Stripe customer
   if (!customerId) {
     const customer = await stripe.customers.create({
-      phone: `+${normalizedPhone}`,
+      phone: normalizedPhone,
       metadata: {
         phone: normalizedPhone,
         app: 'caymus-tanks',
       },
     });
     customerId = customer.id;
-
-    if (user) {
-      user.customerId = customerId;
-    } else {
-      user = {
-        phone: normalizedPhone,
-        name: '',
-        isOwner: false,
-        registeredAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        subscriptionStatus: 'none',
-        customerId,
-      };
-      users.push(user);
-    }
-    saveUsers(users);
+    upsertCaymusUser(normalizedPhone, { customerId });
   }
 
   const successUrl =
     lang === 'es'
-      ? `https://chyrris.com/caymus-tanks/subscribe?success=true&phone=${encodeURIComponent(normalizedPhone)}`
-      : `https://chyrris.com/caymus-tanks/subscribe?success=true&phone=${encodeURIComponent(normalizedPhone)}&lang=en`;
+      ? `https://chyrris.com/caymus-tanks/subscribe?success=true&phone=${encodeURIComponent(normalizedPhone)}&plan=${selectedPlan}`
+      : `https://chyrris.com/caymus-tanks/subscribe?success=true&phone=${encodeURIComponent(normalizedPhone)}&plan=${selectedPlan}&lang=en`;
 
   const cancelUrl =
     lang === 'es'
-      ? `https://chyrris.com/caymus-tanks/subscribe?cancelled=true&phone=${encodeURIComponent(normalizedPhone)}`
-      : `https://chyrris.com/caymus-tanks/subscribe?cancelled=true&phone=${encodeURIComponent(normalizedPhone)}&lang=en`;
+      ? `https://chyrris.com/caymus-tanks/subscribe?canceled=true&phone=${encodeURIComponent(normalizedPhone)}&plan=${selectedPlan}`
+      : `https://chyrris.com/caymus-tanks/subscribe?canceled=true&phone=${encodeURIComponent(normalizedPhone)}&plan=${selectedPlan}&lang=en`;
 
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: 'subscription',
     line_items: [
       {
-        price: CAYMUS_PRICE_ID,
+        price: priceId,
         quantity: 1,
       },
     ],
@@ -162,11 +121,13 @@ export async function createCheckoutSession(
     metadata: {
       phone: normalizedPhone,
       app: 'caymus-tanks',
+      planInterval: selectedPlan,
     },
     subscription_data: {
       metadata: {
         phone: normalizedPhone,
         app: 'caymus-tanks',
+        planInterval: selectedPlan,
       },
     },
     locale: lang === 'es' ? 'es' : 'en',
@@ -176,22 +137,14 @@ export async function createCheckoutSession(
   return { url: session.url!, sessionId: session.id };
 }
 
-// ─── Create Customer Portal Session ───────────────────────────────────────────
-
-/**
- * Creates a Stripe Customer Portal session so the user can manage or cancel
- * their subscription directly from Stripe's hosted portal.
- */
 export async function createCustomerPortalSession(
   phone: string
 ): Promise<{ url: string }> {
   const stripe = getStripe();
   const normalizedPhone = normalizePhone(phone);
+  const user = upsertCaymusUser(normalizedPhone, {});
 
-  const users = loadUsers();
-  const user = users.find(u => u.phone === normalizedPhone);
-
-  if (!user?.customerId) {
+  if (!user.customerId) {
     throw new Error('No Stripe customer found for this phone number');
   }
 
@@ -203,25 +156,43 @@ export async function createCustomerPortalSession(
   return { url: session.url };
 }
 
-// ─── Webhook Handler ───────────────────────────────────────────────────────────
+function mapStripeStatus(status: Stripe.Subscription.Status): CaymusSubscriptionStatus {
+  if (status === 'active' || status === 'trialing') return 'active';
+  if (status === 'past_due' || status === 'unpaid') return 'past_due';
+  if (status === 'canceled') return 'cancelled';
+  if (status === 'incomplete' || status === 'incomplete_expired') return 'pending';
+  return 'pending';
+}
 
-/**
- * Processes Stripe webhook events.
- * Automatically activates/deactivates subscriptions based on payment status.
- * Events handled:
- * - checkout.session.completed → activate subscription
- * - invoice.payment_succeeded  → renew subscription (monthly auto-charge)
- * - invoice.payment_failed     → mark as past_due (card declined)
- * - customer.subscription.deleted → mark as cancelled
- * - customer.subscription.updated → sync status
- * - customer.subscription.created → initial creation
- */
+async function syncSubscription(subscription: Stripe.Subscription): Promise<void> {
+  const phone = getSubscriptionPhone(subscription);
+  if (!phone) return;
+
+  const status = mapStripeStatus(subscription.status);
+  const expiryDate = getSubscriptionPeriodEnd(subscription);
+  const planInterval = getSubscriptionPlanInterval(subscription);
+  const now = new Date();
+  const pastDueAt = status === 'past_due' ? now.toISOString() : undefined;
+  const graceEndsAt = status === 'past_due' ? addDays(now, CAYMUS_GRACE_PERIOD_DAYS).toISOString() : undefined;
+
+  upsertCaymusUser(phone, {
+    subscriptionStatus: status,
+    subscriptionId: subscription.id,
+    subscriptionExpiry: expiryDate,
+    customerId: typeof subscription.customer === 'string' ? subscription.customer : (subscription.customer as any)?.id,
+    planInterval,
+    paymentPastDueAt: status === 'past_due' ? pastDueAt : undefined,
+    graceEndsAt: status === 'past_due' ? graceEndsAt : undefined,
+  });
+
+  console.log(`Caymus subscription synced for ${phone}: ${status} until ${expiryDate}`);
+}
+
 export async function handleStripeWebhook(
   rawBody: Buffer,
   signature: string
 ): Promise<{ received: boolean; message: string }> {
   const stripe = getStripe();
-
   let event: Stripe.Event;
 
   try {
@@ -233,96 +204,58 @@ export async function handleStripeWebhook(
 
   console.log(`Stripe webhook received: ${event.type}`);
 
-  const users = loadUsers();
-
-  const updateUser = (phone: string, updates: Partial<CaymusUser>) => {
-    const idx = users.findIndex(u => u.phone === phone);
-    if (idx >= 0) {
-      Object.assign(users[idx], updates);
-      saveUsers(users);
-      return true;
-    }
-    return false;
-  };
-
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       const phone = normalizePhone(session.metadata?.phone || '');
+      const subscriptionId = typeof session.subscription === 'string'
+        ? session.subscription
+        : (session.subscription as any)?.id;
+      const customerId = typeof session.customer === 'string'
+        ? session.customer
+        : (session.customer as any)?.id;
 
-      if (phone && session.subscription) {
-        const subscriptionId = typeof session.subscription === 'string'
-          ? session.subscription
-          : session.subscription.id;
-
+      if (phone && subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const expiryDate = new Date(subscription.current_period_end * 1000).toISOString();
-        const customerId = typeof session.customer === 'string'
-          ? session.customer
-          : (session.customer as any)?.id;
-
-        const found = updateUser(phone, {
-          subscriptionStatus: 'active',
-          subscriptionId,
-          subscriptionExpiry: expiryDate,
-          customerId,
-        });
-
-        if (!found) {
-          users.push({
-            phone,
-            name: '',
-            isOwner: false,
-            registeredAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-            subscriptionStatus: 'active',
-            subscriptionId,
-            subscriptionExpiry: expiryDate,
-            customerId,
-          });
-          saveUsers(users);
-        }
-
-        console.log(`✅ Subscription activated for phone: ${phone} until ${expiryDate}`);
+        await syncSubscription(subscription);
+        upsertCaymusUser(phone, { customerId, subscriptionId });
       }
       break;
     }
 
     case 'invoice.payment_succeeded': {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as any;
       const subscriptionId = typeof invoice.subscription === 'string'
         ? invoice.subscription
-        : (invoice.subscription as any)?.id;
-
+        : invoice.subscription?.id;
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const phone = normalizePhone(subscription.metadata?.phone || '');
-        const expiryDate = new Date(subscription.current_period_end * 1000).toISOString();
-
-        if (phone) {
-          updateUser(phone, {
-            subscriptionStatus: 'active',
-            subscriptionExpiry: expiryDate,
-          });
-          console.log(`✅ Monthly payment succeeded for phone: ${phone} until ${expiryDate}`);
-        }
+        await syncSubscription(subscription);
       }
       break;
     }
 
     case 'invoice.payment_failed': {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as any;
       const subscriptionId = typeof invoice.subscription === 'string'
         ? invoice.subscription
-        : (invoice.subscription as any)?.id;
-
+        : invoice.subscription?.id;
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const phone = normalizePhone(subscription.metadata?.phone || '');
-
+        const phone = getSubscriptionPhone(subscription);
+        const now = new Date();
+        const graceEndsAt = addDays(now, CAYMUS_GRACE_PERIOD_DAYS).toISOString();
         if (phone) {
-          updateUser(phone, { subscriptionStatus: 'past_due' });
-          console.log(`⚠️ Payment failed for phone: ${phone} - marked as past_due`);
+          upsertCaymusUser(phone, {
+            subscriptionStatus: 'past_due',
+            subscriptionId,
+            subscriptionExpiry: getSubscriptionPeriodEnd(subscription),
+            customerId: typeof subscription.customer === 'string' ? subscription.customer : (subscription.customer as any)?.id,
+            planInterval: getSubscriptionPlanInterval(subscription),
+            paymentPastDueAt: now.toISOString(),
+            graceEndsAt,
+          });
+          console.log(`Payment failed for ${phone}; grace access ends at ${graceEndsAt}`);
         }
       }
       break;
@@ -330,46 +263,25 @@ export async function handleStripeWebhook(
 
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
-      const phone = normalizePhone(subscription.metadata?.phone || '');
-
+      const phone = getSubscriptionPhone(subscription);
       if (phone) {
-        updateUser(phone, {
+        upsertCaymusUser(phone, {
           subscriptionStatus: 'cancelled',
           subscriptionExpiry: new Date().toISOString(),
+          subscriptionId: subscription.id,
+          customerId: typeof subscription.customer === 'string' ? subscription.customer : (subscription.customer as any)?.id,
+          planInterval: getSubscriptionPlanInterval(subscription),
+          paymentPastDueAt: undefined,
+          graceEndsAt: undefined,
         });
-        console.log(`❌ Subscription cancelled for phone: ${phone}`);
       }
       break;
     }
 
-    case 'customer.subscription.updated': {
-      const subscription = event.data.object as Stripe.Subscription;
-      const phone = normalizePhone(subscription.metadata?.phone || '');
-
-      if (phone) {
-        const isActive = subscription.status === 'active';
-        updateUser(phone, {
-          subscriptionStatus: isActive ? 'active' : 'cancelled',
-          subscriptionExpiry: new Date(subscription.current_period_end * 1000).toISOString(),
-        });
-        console.log(`🔄 Subscription updated for phone: ${phone} - status: ${subscription.status}`);
-      }
-      break;
-    }
-
+    case 'customer.subscription.updated':
     case 'customer.subscription.created': {
       const subscription = event.data.object as Stripe.Subscription;
-      const phone = normalizePhone(subscription.metadata?.phone || '');
-      const expiryDate = new Date(subscription.current_period_end * 1000).toISOString();
-
-      if (phone) {
-        updateUser(phone, {
-          subscriptionStatus: subscription.status === 'active' ? 'active' : 'pending',
-          subscriptionId: subscription.id,
-          subscriptionExpiry: expiryDate,
-        });
-        console.log(`🆕 Subscription created for phone: ${phone}`);
-      }
+      await syncSubscription(subscription);
       break;
     }
 
@@ -380,35 +292,17 @@ export async function handleStripeWebhook(
   return { received: true, message: `Event ${event.type} processed` };
 }
 
-// ─── Get Subscription Status ───────────────────────────────────────────────────
-
-/**
- * Returns the subscription status for a phone number.
- * Used by /api/users/profile endpoint.
- */
 export function getSubscriptionStatus(phone: string): {
   isActive: boolean;
+  hasAccess: boolean;
   status: string;
   expiry?: string;
   hasCustomer: boolean;
+  isOwner: boolean;
+  isInGracePeriod: boolean;
+  graceEndsAt?: string;
+  daysRemaining?: number;
+  planInterval?: CaymusPlanInterval;
 } {
-  const users = loadUsers();
-  const user = users.find(u => u.phone === normalizePhone(phone));
-
-  if (!user) return { isActive: false, status: 'none', hasCustomer: false };
-
-  // Owner phones always have access
-  if (user.isOwner) return { isActive: true, status: 'owner', hasCustomer: !!user.customerId };
-
-  const isActive =
-    user.subscriptionStatus === 'active' &&
-    user.subscriptionExpiry != null &&
-    new Date(user.subscriptionExpiry) > new Date();
-
-  return {
-    isActive,
-    status: user.subscriptionStatus,
-    expiry: user.subscriptionExpiry,
-    hasCustomer: !!user.customerId,
-  };
+  return getCaymusAccessStatus(phone);
 }
