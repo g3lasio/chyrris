@@ -9,6 +9,7 @@ import { Technologies } from "../sections/Technologies";
 import { Applications } from "../sections/Applications";
 import { Contact } from "../sections/Contact";
 import { Footer } from "../sections/Footer";
+import chyrrisBrandLogo from "@/assets/chyrris-brand-lockup.webp";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,9 +75,9 @@ export default function Home() {
             {/* Clean Logo */}
             <div className="absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none">
               <img 
-                src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" 
-                alt="CHYRRIS" 
-                className="h-10 w-auto object-contain"
+                src={chyrrisBrandLogo} 
+                alt="CHYRRIS TECHNOLOGIES" 
+                className="h-12 w-auto max-w-[220px] object-contain rounded-md"
                 data-testid="logo"
               />
             </div>

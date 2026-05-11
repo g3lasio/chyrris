@@ -80,6 +80,9 @@ const contactSchema = z.object({
   message: z.string().min(1, "Message is required"),
 });
 
+const LEADPRIME_CONTACT_WEBHOOK_URL = process.env.LEADPRIME_CONTACT_WEBHOOK_URL || "https://leadprime.chyrris.com/api/leads/webhook/wh_15c5d9cb3cc145972a773c43e70edc8d5939376bb84080cc";
+
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Twilio OTP endpoints for Caymus Tanks mobile app
   app.post("/api/otp/send", async (req, res) => {
@@ -262,29 +265,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contact form submission endpoint
   app.post("/api/contact", async (req, res) => {
     try {
-      // Validate request body
       const validatedData = contactSchema.parse(req.body);
-      
-      // For now, we'll just return success
-      // In a real application, this would store the message 
-      // or send an email notification
-      
+      const submittedAt = new Date().toISOString();
+      const leadPayload = {
+        ...validatedData,
+        source: "chyrris_website_contact_form",
+        submittedAt,
+        metadata: {
+          website: "chyrris.com",
+          userAgent: req.get("user-agent") || null,
+          ip: req.ip || req.socket.remoteAddress || null,
+        },
+      };
+
+      const webhookResponse = await fetch(LEADPRIME_CONTACT_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Chyrris-Website/1.0",
+        },
+        body: JSON.stringify(leadPayload),
+      });
+
+      if (!webhookResponse.ok) {
+        const errorText = await webhookResponse.text().catch(() => "");
+        console.error("LeadPrime webhook rejected contact lead", {
+          status: webhookResponse.status,
+          response: errorText.slice(0, 500),
+        });
+
+        return res.status(502).json({
+          success: false,
+          message: "Lead webhook unavailable",
+        });
+      }
+
       return res.status(200).json({
         success: true,
-        message: "Message received successfully"
+        message: "Message received successfully",
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
           message: "Validation error",
-          errors: error.errors
+          errors: error.errors,
         });
       }
-      
+
+      console.error("Error forwarding contact lead", error);
       return res.status(500).json({
         success: false,
-        message: "An error occurred while processing your request"
+        message: "An error occurred while processing your request",
       });
     }
   });

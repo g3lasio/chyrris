@@ -5,6 +5,7 @@ import { ParticleBackground } from "../components/ParticleBackground";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Footer } from "../sections/Footer";
 import bannerImage from "@assets/Tzotzil_Bible_1766730387872.png";
+import chyrrisBrandLogo from "@/assets/chyrris-brand-lockup.webp";
 
 export default function TzotzilBible() {
   const { currentLanguage } = useLanguage();
@@ -77,8 +78,8 @@ export default function TzotzilBible() {
             <div className="flex items-center gap-4">
               <LanguageSwitcher variant="minimal" />
               <img 
-                src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" 
-                alt="CHYRRIS" 
+                src={chyrrisBrandLogo} 
+                alt="CHYRRIS TECHNOLOGIES" 
                 className="h-8" 
               />
             </div>

@@ -107,7 +107,7 @@ export function Applications() {
         </div>
         
         {/* App cards grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6">
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* Tzotzil Bible - Featured App */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -115,11 +115,11 @@ export function Applications() {
             viewport={{ once: true }}
             whileHover={{ y: -8 }}
             transition={{ duration: 0.5 }}
-            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 backdrop-blur-xl border border-[#f5b308]/20 hover:border-[#f5b308]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(245,179,8,0.1)]"
+            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 min-h-[620px] flex flex-col backdrop-blur-xl border border-[#f5b308]/20 hover:border-[#f5b308]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(245,179,8,0.1)]"
             data-testid="card-tzotzil-bible"
           >
             {/* Image */}
-            <div className="w-full h-40 relative overflow-hidden">
+            <div className="w-full h-48 relative overflow-hidden">
               <img
                 src={tzotzilBanner}
                 alt={translations.applications.tzotzil.title}
@@ -134,38 +134,38 @@ export function Applications() {
             </div>
 
             {/* Content */}
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-[#f5b308] mb-2 group-hover:text-[#f5b308] transition-colors">
+            <div className="p-6 flex flex-1 flex-col">
+              <h3 className="text-2xl font-bold text-[#f5b308] mb-2 group-hover:text-[#f5b308] transition-colors">
                 {translations.applications.tzotzil.title}
               </h3>
-              <p className="text-gray-400 font-rajdhani mb-3 text-xs leading-relaxed line-clamp-3">
+              <p className="text-gray-300 font-rajdhani mb-5 text-sm leading-relaxed">
                 {translations.applications.tzotzil.description}
               </p>
 
               {/* Tagline */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-start gap-2 mb-5 min-h-[2.5rem]">
                 <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-[#f5b308]"></div>
-                <span className="text-xs uppercase tracking-wider text-[#f5b308]">
+                <span className="text-[11px] uppercase tracking-wider leading-snug text-[#f5b308]">
                   {translations.applications.tzotzil.tagline}
                 </span>
               </div>
 
               {/* Action buttons */}
-              <div className="flex flex-col gap-2 pt-3 border-t border-[#f5b308]/10">
+              <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-[#f5b308]/10">
                 <a 
                   href="https://bible.chyrris.com/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-full py-2 px-3 bg-gradient-to-r from-[#f5b308] to-[#e5a308] hover:opacity-90 text-[#0a0d12] text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity flex items-center justify-center gap-1"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-[#f5b308] to-[#e5a308] hover:opacity-90 text-[#0a0d12] text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity flex items-center justify-center gap-1"
                   data-testid="button-tzotzil-open-app"
                 >
                   {tzotzilContent.openApp}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </a>
                 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Link href="/tzotzil-bible/about">
                     <div 
                       className="w-full py-2 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center"
@@ -202,15 +202,15 @@ export function Applications() {
             viewport={{ once: true }}
             whileHover={{ y: -8 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 backdrop-blur-xl border border-[#35ffdd]/20 hover:border-[#35ffdd]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(53,255,221,0.1)]"
+            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 min-h-[620px] flex flex-col backdrop-blur-xl border border-[#35ffdd]/20 hover:border-[#35ffdd]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(53,255,221,0.1)]"
             data-testid="card-pocima-salvaje"
           >
             {/* Image */}
-            <div className="w-full h-40 relative overflow-hidden bg-gradient-to-br from-[#0a1a1a] to-[#0f1419] flex items-center justify-center">
+            <div className="w-full h-48 relative overflow-hidden bg-gradient-to-br from-[#0a1a1a] to-[#0f1419] flex items-center justify-center">
               <img
                 src={pocimaSalvajeLogo}
                 alt={translations.applications.pocimaSalvaje.title}
-                className="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-500"
+                className="w-32 h-32 object-contain group-hover:scale-110 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f1419] via-transparent to-transparent"></div>
               
@@ -221,62 +221,62 @@ export function Applications() {
             </div>
 
             {/* Content */}
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-[#35ffdd] mb-2 group-hover:text-[#35ffdd] transition-colors">
+            <div className="p-6 flex flex-1 flex-col">
+              <h3 className="text-2xl font-bold text-[#35ffdd] mb-2 group-hover:text-[#35ffdd] transition-colors">
                 {translations.applications.pocimaSalvaje.title}
               </h3>
-              <p className="text-gray-400 font-rajdhani mb-3 text-xs leading-relaxed line-clamp-3">
+              <p className="text-gray-300 font-rajdhani mb-5 text-sm leading-relaxed">
                 {translations.applications.pocimaSalvaje.description}
               </p>
 
               {/* Tagline */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-start gap-2 mb-5 min-h-[2.5rem]">
                 <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-[#35ffdd]"></div>
-                <span className="text-xs uppercase tracking-wider text-[#35ffdd]">
+                <span className="text-[11px] uppercase tracking-wider leading-snug text-[#35ffdd]">
                   {translations.applications.pocimaSalvaje.tagline}
                 </span>
               </div>
 
               {/* Action buttons */}
-              <div className="flex flex-col gap-2 pt-3 border-t border-[#35ffdd]/10">
+              <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-[#35ffdd]/10">
                 <Link href="/pocima-salvaje">
                   <div 
-                    className="w-full py-2 px-3 bg-gradient-to-r from-[#35ffdd] to-[#4cc4ff] hover:opacity-90 text-[#0a0d12] text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity flex items-center justify-center gap-1 cursor-pointer"
+                    className="w-full py-3 px-4 bg-gradient-to-r from-[#35ffdd] to-[#4cc4ff] hover:opacity-90 text-[#0a0d12] text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity flex items-center justify-center gap-1 cursor-pointer"
                     data-testid="button-pocima-details"
                   >
                     {pocimaContent.viewDetails}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </div>
                 </Link>
                 
-                <div className="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Link href="/pocima-salvaje/privacy">
                     <div 
-                      className="w-full py-1.5 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="w-full py-2.5 px-3 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                       data-testid="button-pocima-privacy"
                       title={pocimaContent.privacyPolicy}
                     >
-                      Privacy
+                      {pocimaContent.privacyPolicy}
                     </div>
                   </Link>
                   <Link href="/pocima-salvaje/terms">
                     <div 
-                      className="w-full py-1.5 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="w-full py-2.5 px-3 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                       data-testid="button-pocima-terms"
                       title={pocimaContent.terms}
                     >
-                      Terms
+                      {pocimaContent.terms}
                     </div>
                   </Link>
                   <Link href="/pocima-salvaje/support">
                     <div 
-                      className="w-full py-1.5 px-2 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="w-full py-2.5 px-3 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                       data-testid="button-pocima-support"
                       title={pocimaContent.support}
                     >
-                      Support
+                      {pocimaContent.support}
                     </div>
                   </Link>
                 </div>
@@ -291,11 +291,11 @@ export function Applications() {
             viewport={{ once: true }}
             whileHover={{ y: -8 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 backdrop-blur-xl border border-[#8b5cf6]/20 hover:border-[#8b5cf6]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(139,92,246,0.1)]"
+            className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 min-h-[620px] flex flex-col backdrop-blur-xl border border-[#8b5cf6]/20 hover:border-[#8b5cf6]/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(139,92,246,0.1)]"
             data-testid="card-caymus-tanks"
           >
             {/* Image */}
-            <div className="w-full h-40 relative overflow-hidden">
+            <div className="w-full h-48 relative overflow-hidden">
               <img
                 src={caymusTanksLogo}
                 alt={translations.applications.caymusTanks.title}
@@ -310,31 +310,31 @@ export function Applications() {
             </div>
 
             {/* Content */}
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-[#8b5cf6] mb-2 group-hover:text-[#8b5cf6] transition-colors">
+            <div className="p-6 flex flex-1 flex-col">
+              <h3 className="text-2xl font-bold text-[#8b5cf6] mb-2 group-hover:text-[#8b5cf6] transition-colors">
                 {translations.applications.caymusTanks.title}
               </h3>
-              <p className="text-gray-400 font-rajdhani mb-3 text-xs leading-relaxed line-clamp-3">
+              <p className="text-gray-300 font-rajdhani mb-5 text-sm leading-relaxed">
                 {translations.applications.caymusTanks.description}
               </p>
 
               {/* Tagline */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-start gap-2 mb-5 min-h-[2.5rem]">
                 <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-[#8b5cf6]"></div>
-                <span className="text-xs uppercase tracking-wider text-[#8b5cf6]">
+                <span className="text-[11px] uppercase tracking-wider leading-snug text-[#8b5cf6]">
                   {translations.applications.caymusTanks.tagline}
                 </span>
               </div>
 
               {/* Action buttons */}
-              <div className="flex flex-col gap-2 pt-3 border-t border-[#8b5cf6]/10">
+              <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-[#8b5cf6]/10">
                 <Link href="/caymus-tanks">
                   <div 
-                    className="w-full py-2 px-3 bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] hover:opacity-90 text-white text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity cursor-pointer flex items-center justify-center gap-1"
+                    className="w-full py-3 px-4 bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] hover:opacity-90 text-white text-center rounded-lg text-xs font-bold uppercase tracking-wider transition-opacity cursor-pointer flex items-center justify-center gap-1"
                     data-testid="button-caymus-details"
                   >
                     {caymusContent.viewDetails}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </div>
@@ -342,11 +342,11 @@ export function Applications() {
                 
                 <Link href="/caymus-tanks/privacy">
                   <div 
-                    className="w-full py-2 px-3 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1"
+                    className="w-full py-3 px-4 border border-[#4cc4ff]/30 text-[#4cc4ff] hover:bg-[#4cc4ff]/5 text-center rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1"
                     data-testid="button-caymus-privacy"
                   >
                     {caymusContent.privacyPolicy}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>

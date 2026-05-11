@@ -5,6 +5,7 @@ import { ParticleBackground } from "../components/ParticleBackground";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Footer } from "../sections/Footer";
 import caymusTanksLogo from "@assets/caymus-tanks-logo.jpg";
+import chyrrisBrandLogo from "@/assets/chyrris-brand-lockup.webp";
 
 export default function CaymusTanks() {
   const { currentLanguage } = useLanguage();
@@ -123,8 +124,8 @@ export default function CaymusTanks() {
             <div className="flex items-center gap-4">
               <LanguageSwitcher variant="minimal" />
               <img 
-                src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" 
-                alt="CHYRRIS" 
+                src={chyrrisBrandLogo} 
+                alt="CHYRRIS TECHNOLOGIES" 
                 className="h-8" 
               />
             </div>

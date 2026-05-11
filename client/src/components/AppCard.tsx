@@ -54,7 +54,7 @@ export function AppCard({
       viewport={{ once: true }}
       whileHover={{ y: -8 }}
       transition={{ duration: 0.5, delay }}
-      className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 backdrop-blur-xl border border-[#4cc4ff]/10 hover:border-[#4cc4ff]/30 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(76,196,255,0.1)]"
+      className="group relative rounded-2xl overflow-hidden bg-[#0f1419]/80 min-h-[620px] flex flex-col backdrop-blur-xl border border-[#4cc4ff]/10 hover:border-[#4cc4ff]/30 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(76,196,255,0.1)]"
     >
       {/* Image */}
       <div className="w-full h-48 relative overflow-hidden">
@@ -79,27 +79,27 @@ export function AppCard({
       </div>
 
       {/* Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#4cc4ff] transition-colors">
+      <div className="p-6 flex flex-1 flex-col">
+        <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-[#4cc4ff] transition-colors">
           {title}
         </h3>
-        <p className="text-gray-400 font-rajdhani mb-4 text-sm leading-relaxed">
+        <p className="text-gray-300 font-rajdhani mb-5 text-sm leading-relaxed">
           {description}
         </p>
 
         {/* Tagline */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-start gap-2 mb-5 min-h-[2.5rem]">
           <div 
             className="w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ backgroundColor: tagColors[tagColor].accent }}
           ></div>
-          <span className={`text-xs uppercase tracking-wider ${tagColors[tagColor].text}`}>
+          <span className={`text-[11px] uppercase tracking-wider leading-snug ${tagColors[tagColor].text}`}>
             {tagline}
           </span>
         </div>
 
         {/* Tags and Link */}
-        <div className="flex justify-between items-center pt-4 border-t border-[#4cc4ff]/10">
+        <div className="mt-auto flex justify-between items-center gap-4 pt-4 border-t border-[#4cc4ff]/10">
           <div className="flex flex-wrap gap-2">
             {tags.map((tag, index) => (
               <span 

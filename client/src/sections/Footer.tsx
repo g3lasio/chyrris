@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
+import chyrrisBrandLogo from "@/assets/chyrris-brand-lockup.webp";
 
 export function Footer() {
   const { translations } = useLanguage();
@@ -18,14 +19,10 @@ export function Footer() {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img 
-              src="https://i.postimg.cc/Cx6ZzsQS/Logo-chyrris.png" 
+              src={chyrrisBrandLogo} 
               alt="CHYRRIS TECHNOLOGIES" 
-              className="h-8" 
+              className="h-14 w-auto max-w-[240px] object-contain rounded-md" 
             />
-            <span className="text-lg font-bold">
-              <span className="text-white">CHYRRIS</span>
-              <span className="text-[#4cc4ff]"> TECHNOLOGIES</span>
-            </span>
           </div>
           
           {/* Social links */}

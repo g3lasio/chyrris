@@ -8,12 +8,26 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ variant = 'default', className = '' }: LanguageSwitcherProps) {
   const { currentLanguage, setLanguage, isEnglish, isSpanish, toggleLanguage } = useLanguage();
+
+  const handleSetLanguage = (lang: 'en' | 'es') => (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setLanguage(lang);
+  };
+
+  const handleToggleLanguage = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleLanguage();
+  };
   
   // Minimal variant (just one toggle button)
   if (variant === 'minimal') {
     return (
       <button 
-        onClick={toggleLanguage}
+        type="button"
+        onClick={handleToggleLanguage}
+        aria-label={`Switch language. Current language: ${currentLanguage.toUpperCase()}`}
         className={`relative armor-plate p-1 px-2 py-1 text-xs rounded flex items-center space-x-1 ${className}`}
       >
         <span className={`transition-colors ${isEnglish ? 'text-[#4cc4ff] font-bold' : 'text-gray-400'}`}>EN</span>
@@ -46,7 +60,9 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
         />
         
         <button 
-          onClick={() => setLanguage('en')}
+          type="button"
+          onClick={handleSetLanguage('en')}
+          aria-pressed={isEnglish}
           className={`px-2 py-1 text-xs rounded relative transition-all duration-300 
             ${isEnglish 
               ? 'bg-[#4cc4ff] text-white' 
@@ -64,7 +80,9 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
         </button>
         
         <button 
-          onClick={() => setLanguage('es')}
+          type="button"
+          onClick={handleSetLanguage('es')}
+          aria-pressed={isSpanish}
           className={`px-2 py-1 text-xs rounded relative transition-all duration-300
             ${isSpanish 
               ? 'bg-[#4cc4ff] text-white' 
@@ -85,10 +103,6 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
         <div className="absolute -top-1 -right-1 w-1 h-1 border-t border-r border-[#35ffdd60]"></div>
         <div className="absolute -bottom-1 -left-1 w-1 h-1 border-b border-l border-[#35ffdd60]"></div>
         
-        {/* Diagnostic data */}
-        <div className="absolute -bottom-5 left-0 w-full text-[8px] text-[#4cc4ff70] font-mono pointer-events-none text-center">
-          {currentLanguage.toUpperCase()} ACTIVE
-        </div>
       </div>
     );
   }
@@ -97,7 +111,9 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
   return (
     <div className={`flex space-x-2 relative armor-plate p-1 ${className}`}>
       <button 
-        onClick={() => setLanguage('en')}
+        type="button"
+          onClick={handleSetLanguage('en')}
+          aria-pressed={isEnglish}
         className={`px-2 py-1 text-xs rounded relative ${isEnglish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
       >
         EN
@@ -107,7 +123,9 @@ export function LanguageSwitcher({ variant = 'default', className = '' }: Langua
       </button>
       
       <button 
-        onClick={() => setLanguage('es')}
+        type="button"
+          onClick={handleSetLanguage('es')}
+          aria-pressed={isSpanish}
         className={`px-2 py-1 text-xs rounded relative ${isSpanish ? 'bg-[#4cc4ff] text-white' : 'text-[#4cc4ff] border border-[#4cc4ff40]'}`}
       >
         ES

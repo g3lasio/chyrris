@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
+import chyrrisLogoMark from "@/assets/chyrris-logo-mark.webp";
 
 export function About() {
   const { translations } = useLanguage();
@@ -102,8 +103,12 @@ export function About() {
               {/* Decorative circles */}
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-[#4cc4ff]/20 rounded-full"></div>
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-[#35ffdd]/20 rounded-full"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-br from-[#4cc4ff]/20 to-[#35ffdd]/20 rounded-full flex items-center justify-center">
-                <span className="text-4xl font-bold text-white">CT</span>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-br from-[#4cc4ff]/20 to-[#35ffdd]/20 rounded-full flex items-center justify-center p-4 shadow-[0_0_45px_rgba(76,196,255,0.18)]">
+                <img
+                  src={chyrrisLogoMark}
+                  alt="Chyrris Technologies official logo"
+                  className="max-h-28 w-auto object-contain rounded-xl mix-blend-screen opacity-95"
+                />
               </div>
               
               {/* Corner accents */}
