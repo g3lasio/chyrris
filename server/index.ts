@@ -3,6 +3,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+// El webhook de Stripe necesita el body crudo e intacto para verificar la firma.
+// express.json() consumiría el stream antes de que la ruta pudiera leerlo, así
+// que el parser raw debe montarse primero para esa ruta.
+app.use("/api/stripe/webhook", express.raw({ type: "*/*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

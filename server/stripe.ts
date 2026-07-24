@@ -14,6 +14,7 @@ import Stripe from 'stripe';
 import {
   CAYMUS_GRACE_PERIOD_DAYS,
   type CaymusSubscriptionStatus,
+  findCaymusUser,
   getCaymusAccessStatus,
   normalizePhone,
   upsertCaymusUser,
@@ -51,8 +52,29 @@ function getPriceId(planInterval: CaymusPlanInterval): string {
 }
 
 function getSubscriptionPeriodEnd(subscription: Stripe.Subscription): string {
-  const periodEnd = (subscription as any).current_period_end;
-  return new Date(periodEnd * 1000).toISOString();
+  // Desde la versión de API 2025-03-31.basil, current_period_end ya no existe en
+  // la suscripción: vive en cada subscription item.
+  const legacyEnd = (subscription as any).current_period_end;
+  const itemEnd = (subscription.items?.data?.[0] as any)?.current_period_end;
+  const periodEnd = typeof legacyEnd === 'number' ? legacyEnd : itemEnd;
+  if (typeof periodEnd === 'number' && Number.isFinite(periodEnd)) {
+    return new Date(periodEnd * 1000).toISOString();
+  }
+  // Nunca dejar que una fecha ausente tumbe la activación de un pago real.
+  const interval = getSubscriptionPlanInterval(subscription) || 'year';
+  const fallbackDays = interval === 'year' ? 365 : 31;
+  console.warn(`Stripe subscription ${subscription.id} sin current_period_end; usando fallback de ${fallbackDays} días`);
+  return new Date(Date.now() + fallbackDays * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function getInvoiceSubscriptionId(invoice: any): string | undefined {
+  // API antigua: invoice.subscription. Desde basil: invoice.parent.subscription_details.
+  if (typeof invoice?.subscription === 'string') return invoice.subscription;
+  if (invoice?.subscription?.id) return invoice.subscription.id;
+  const parentSub = invoice?.parent?.subscription_details?.subscription;
+  if (typeof parentSub === 'string') return parentSub;
+  if (parentSub?.id) return parentSub.id;
+  return undefined;
 }
 
 function getSubscriptionPlanInterval(subscription: Stripe.Subscription): CaymusPlanInterval | undefined {
@@ -75,12 +97,14 @@ function addDays(date: Date, days: number): Date {
 export async function createCheckoutSession(
   phone: string,
   lang: string = 'es',
-  planInterval: CaymusPlanInterval = 'year'
+  planInterval: CaymusPlanInterval = 'year',
+  email?: string
 ): Promise<{ url: string; sessionId: string }> {
   const stripe = getStripe();
   const normalizedPhone = normalizePhone(phone);
   const selectedPlan = planInterval === 'month' ? 'month' : 'year';
   const priceId = getPriceId(selectedPlan);
+  const normalizedEmail = email?.trim().toLowerCase() || undefined;
 
   const user = upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
   let customerId = user.customerId;
@@ -88,6 +112,7 @@ export async function createCheckoutSession(
   if (!customerId) {
     const customer = await stripe.customers.create({
       phone: normalizedPhone,
+      email: normalizedEmail,
       metadata: {
         phone: normalizedPhone,
         app: 'caymus-tanks',
@@ -95,6 +120,12 @@ export async function createCheckoutSession(
     });
     customerId = customer.id;
     upsertCaymusUser(normalizedPhone, { customerId });
+  } else if (normalizedEmail) {
+    try {
+      await stripe.customers.update(customerId, { email: normalizedEmail });
+    } catch (error) {
+      console.error(`No se pudo actualizar el email del customer ${customerId}:`, error);
+    }
   }
 
   const successUrl =
@@ -164,8 +195,8 @@ function mapStripeStatus(status: Stripe.Subscription.Status): CaymusSubscription
   return 'pending';
 }
 
-async function syncSubscription(subscription: Stripe.Subscription): Promise<void> {
-  const phone = getSubscriptionPhone(subscription);
+async function syncSubscription(subscription: Stripe.Subscription, fallbackPhone?: string): Promise<void> {
+  const phone = getSubscriptionPhone(subscription) || normalizePhone(fallbackPhone || '');
   if (!phone) return;
 
   const status = mapStripeStatus(subscription.status);
@@ -217,7 +248,7 @@ export async function handleStripeWebhook(
 
       if (phone && subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        await syncSubscription(subscription);
+        await syncSubscription(subscription, phone);
         upsertCaymusUser(phone, { customerId, subscriptionId });
       }
       break;
@@ -225,9 +256,7 @@ export async function handleStripeWebhook(
 
     case 'invoice.payment_succeeded': {
       const invoice = event.data.object as any;
-      const subscriptionId = typeof invoice.subscription === 'string'
-        ? invoice.subscription
-        : invoice.subscription?.id;
+      const subscriptionId = getInvoiceSubscriptionId(invoice);
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         await syncSubscription(subscription);
@@ -237,9 +266,7 @@ export async function handleStripeWebhook(
 
     case 'invoice.payment_failed': {
       const invoice = event.data.object as any;
-      const subscriptionId = typeof invoice.subscription === 'string'
-        ? invoice.subscription
-        : invoice.subscription?.id;
+      const subscriptionId = getInvoiceSubscriptionId(invoice);
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const phone = getSubscriptionPhone(subscription);
@@ -290,6 +317,67 @@ export async function handleStripeWebhook(
   }
 
   return { received: true, message: `Event ${event.type} processed` };
+}
+
+// Reconciliación directa contra Stripe: si un pago se completó pero el webhook
+// se perdió (o el archivo .data se reinició), esto reactiva al usuario en su
+// siguiente login OTP o consulta de perfil, sin depender del webhook.
+const LIVE_SUBSCRIPTION_STATUSES: Stripe.Subscription.Status[] = ['active', 'trialing', 'past_due'];
+const reconcileLastAttempt = new Map<string, number>();
+const RECONCILE_MIN_INTERVAL_MS = 30 * 1000;
+
+export async function reconcileSubscriptionFromStripe(phone: string): Promise<boolean> {
+  const normalizedPhone = normalizePhone(phone);
+  if (!normalizedPhone || !STRIPE_SECRET_KEY) return false;
+
+  const lastAttempt = reconcileLastAttempt.get(normalizedPhone) || 0;
+  if (Date.now() - lastAttempt < RECONCILE_MIN_INTERVAL_MS) return false;
+  reconcileLastAttempt.set(normalizedPhone, Date.now());
+
+  try {
+    const stripe = getStripe();
+    const user = findCaymusUser(normalizedPhone);
+    const found = new Map<string, Stripe.Subscription>();
+
+    if (user?.customerId) {
+      try {
+        const byCustomer = await stripe.subscriptions.list({
+          customer: user.customerId,
+          status: 'all',
+          limit: 10,
+        });
+        for (const sub of byCustomer.data) found.set(sub.id, sub);
+      } catch (error) {
+        console.error(`Stripe subscriptions.list falló para ${normalizedPhone}:`, error);
+      }
+    }
+
+    const hasLive = Array.from(found.values()).some((sub) => LIVE_SUBSCRIPTION_STATUSES.includes(sub.status));
+    if (!hasLive) {
+      // Cubre el caso de customerId perdido (p. ej. reinicio de .data): las
+      // suscripciones de Caymus siempre llevan phone/app en metadata.
+      try {
+        const bySearch = await stripe.subscriptions.search({
+          query: `metadata['phone']:'${normalizedPhone}' AND metadata['app']:'caymus-tanks'`,
+          limit: 10,
+        });
+        for (const sub of bySearch.data) found.set(sub.id, sub);
+      } catch (error) {
+        console.error(`Stripe subscriptions.search falló para ${normalizedPhone}:`, error);
+      }
+    }
+
+    if (!found.size) return false;
+
+    const ranked = Array.from(found.values()).sort((a, b) => (b.created || 0) - (a.created || 0));
+    const preferred = ranked.find((sub) => LIVE_SUBSCRIPTION_STATUSES.includes(sub.status)) || ranked[0];
+    await syncSubscription(preferred, normalizedPhone);
+    console.log(`Reconciliación Stripe para ${normalizedPhone}: subscription ${preferred.id} (${preferred.status})`);
+    return true;
+  } catch (error) {
+    console.error(`Reconciliación Stripe falló para ${normalizedPhone}:`, error);
+    return false;
+  }
 }
 
 export function getSubscriptionStatus(phone: string): {

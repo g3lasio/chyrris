@@ -8,9 +8,10 @@ import { fileURLToPath } from "url";
 import { sendOTP, verifyOTP } from "./twilio";
 import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
 import { validateAppleReceipt, checkSubscriptionStatus, handleAppleNotification } from "./apple-iap";
-import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus, createCustomerPortalSession } from "./stripe";
+import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus, createCustomerPortalSession, reconcileSubscriptionFromStripe } from "./stripe";
 import {
   createCaymusSession,
+  findCaymusUser,
   getCaymusAccessStatus,
   isOwnerPhone as isConfiguredOwnerPhone,
   normalizePhone as normalizeCaymusPhone,
@@ -127,8 +128,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const normalizedPhone = normalizePhone(phoneNumber);
       const session = createCaymusSession(normalizedPhone);
-      upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
-      const access = getCaymusAccessStatus(normalizedPhone);
+      const user = upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
+      let access = getCaymusAccessStatus(normalizedPhone);
+
+      // Si el registro local no muestra acceso, verificar el pago directamente
+      // contra Stripe: cubre webhooks perdidos y reinicios del archivo .data.
+      if (!access.hasAccess) {
+        const reconciled = await reconcileSubscriptionFromStripe(normalizedPhone);
+        if (reconciled) access = getCaymusAccessStatus(normalizedPhone);
+      }
 
       return res.status(200).json({
         ...result,
@@ -136,10 +144,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionToken: session.token,
         sessionExpiresAt: session.expiresAt,
         isOwner: access.isOwner,
+        // La app usa userName/isRegistered para decidir si va a registro de
+        // perfil o directo a la calculadora: sin estos campos, todo usuario
+        // (incluso pagado) era tratado como nuevo en cada login OTP.
+        userName: user.name || null,
+        isRegistered: !!user.name || access.isOwner,
         subscriptionStatus: access.status === 'owner' ? 'active' : access.status,
         hasAccess: access.hasAccess,
         isInGracePeriod: access.isInGracePeriod,
         graceEndsAt: access.graceEndsAt,
+        subscriptionExpiry: access.expiry || null,
       });
     } catch (error) {
       console.error('Error in /api/otp/verify:', error);
@@ -170,7 +184,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!session) return;
 
       const user = upsertCaymusUser(normalizedPhone, { lastLogin: new Date().toISOString() });
-      const access = getCaymusAccessStatus(normalizedPhone);
+      let access = getCaymusAccessStatus(normalizedPhone);
+
+      // Igual que en /api/otp/verify: si no hay acceso local, consultar Stripe
+      // directamente antes de responder (webhook perdido / .data reiniciado).
+      if (!access.hasAccess) {
+        const reconciled = await reconcileSubscriptionFromStripe(normalizedPhone);
+        if (reconciled) access = getCaymusAccessStatus(normalizedPhone);
+      }
 
       return res.json({
         success: true,
@@ -210,10 +231,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!session) return;
 
       const isOwner = isConfiguredOwnerPhone(normalizedPhone);
+      // No pisar una suscripción ya activa/past_due al re-registrar el nombre
+      // (p. ej. usuario pagado que reinstala la app).
+      const existingUser = findCaymusUser(normalizedPhone);
+      const keepExistingStatus = !!existingUser?.subscriptionStatus && existingUser.subscriptionStatus !== 'none';
       const user = upsertCaymusUser(normalizedPhone, {
         name: name.trim(),
         lastLogin: new Date().toISOString(),
-        subscriptionStatus: isOwner ? 'active' : 'pending',
+        ...(keepExistingStatus ? {} : { subscriptionStatus: isOwner ? 'active' : 'pending' }),
       });
       const access = getCaymusAccessStatus(normalizedPhone);
 
@@ -409,7 +434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
    */
   app.post("/api/stripe/create-checkout", async (req: Request, res: Response) => {
     try {
-      const { phone, lang, planInterval } = req.body;
+      const { phone, lang, planInterval, email, customerEmail } = req.body;
       if (!phone) {
         return res.status(400).json({ success: false, message: 'Phone number is required' });
       }
@@ -417,7 +442,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = requireCaymusSession(req, res, normalizedPhone);
       if (!session) return;
       const selectedPlan = planInterval === 'month' ? 'month' : 'year';
-      const { url, sessionId } = await createCheckoutSession(normalizedPhone, lang || 'es', selectedPlan);
+      const checkoutEmail = typeof email === 'string' && email.trim() ? email : (typeof customerEmail === 'string' ? customerEmail : undefined);
+      const { url, sessionId } = await createCheckoutSession(normalizedPhone, lang || 'es', selectedPlan, checkoutEmail);
       return res.json({ success: true, url, sessionId });
     } catch (error: any) {
       console.error('Error creating Stripe checkout:', error);
@@ -452,39 +478,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
    * Activa/desactiva suscripciones automáticamente.
    * IMPORTANT: Must use raw body for signature verification.
    */
-  app.post("/api/stripe/webhook",
-    // Raw body middleware specifically for this route
-    (req: Request, res: Response, next: Function) => {
-      let rawBody = Buffer.alloc(0);
-      req.on('data', (chunk: Buffer) => {
-        rawBody = Buffer.concat([rawBody, chunk]);
-      });
-      req.on('end', () => {
-        (req as any).rawBody = rawBody;
-        next();
-      });
-    },
-    async (req: Request, res: Response) => {
-      try {
-        const signature = req.headers['stripe-signature'] as string;
-        if (!signature) {
-          return res.status(400).json({ error: 'Missing stripe-signature header' });
-        }
-        const rawBody = (req as any).rawBody as Buffer;
-        const result = await handleStripeWebhook(rawBody, signature);
-        return res.json(result);
-      } catch (error: any) {
-        console.error('Stripe webhook error:', error.message);
-        return res.status(400).json({ error: error.message });
+  app.post("/api/stripe/webhook", async (req: Request, res: Response) => {
+    try {
+      const signature = req.headers['stripe-signature'] as string;
+      if (!signature) {
+        return res.status(400).json({ error: 'Missing stripe-signature header' });
       }
+      // express.raw (montado en index.ts) deja el body crudo como Buffer.
+      const rawBody = Buffer.isBuffer(req.body) ? req.body : (req as any).rawBody;
+      if (!rawBody || !rawBody.length) {
+        return res.status(400).json({ error: 'Missing raw request body' });
+      }
+      const result = await handleStripeWebhook(rawBody, signature);
+      return res.json(result);
+    } catch (error: any) {
+      console.error('Stripe webhook error:', error.message);
+      return res.status(400).json({ error: error.message });
     }
-  );
+  });
 
   /**
    * GET /api/stripe/subscription-status?phone=+1234567890
    * Devuelve el estado de suscripción de un usuario.
    */
-  app.get("/api/stripe/subscription-status", (req: Request, res: Response) => {
+  app.get("/api/stripe/subscription-status", async (req: Request, res: Response) => {
     try {
       const { phone } = req.query;
       if (!phone || typeof phone !== 'string') {
@@ -493,7 +510,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedPhone = normalizePhone(phone);
       const session = requireCaymusSession(req, res, normalizedPhone);
       if (!session) return;
-      const status = getSubscriptionStatus(normalizedPhone);
+      let status = getSubscriptionStatus(normalizedPhone);
+      if (!status.hasAccess) {
+        const reconciled = await reconcileSubscriptionFromStripe(normalizedPhone);
+        if (reconciled) status = getSubscriptionStatus(normalizedPhone);
+      }
       return res.json({ success: true, ...status });
     } catch (error: any) {
       console.error('Error getting subscription status:', error);
