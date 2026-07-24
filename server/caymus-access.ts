@@ -2,6 +2,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import type { Request, Response } from "express";
+import { mirrorCaymusData } from "./caymus-store";
 
 export type CaymusSubscriptionStatus = "none" | "pending" | "active" | "expired" | "past_due" | "cancelled";
 
@@ -37,6 +38,28 @@ const SESSION_DURATION_DAYS = Number(process.env.CAYMUS_SESSION_DURATION_DAYS ||
 
 function ensureDataDir(): void {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Escritura atómica: temp + rename. Un SIGKILL a mitad de un writeFileSync en
+// el archivo real dejaría JSON truncado y la siguiente carga lo trataría como
+// base vacía, borrando todos los usuarios.
+function atomicWriteFileSync(file: string, contents: string): void {
+  const tmp = `${file}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, contents);
+  fs.renameSync(tmp, file);
+}
+
+// Ante JSON corrupto, preservar evidencia en vez de sobreescribir silenciosamente.
+function backupCorruptFile(file: string): void {
+  try {
+    if (fs.existsSync(file) && fs.statSync(file).size > 0) {
+      const backup = `${file}.corrupt-${Date.now()}`;
+      fs.copyFileSync(file, backup);
+      console.error(`Archivo Caymus corrupto respaldado en ${backup}`);
+    }
+  } catch (error) {
+    console.error("No se pudo respaldar archivo corrupto:", error);
+  }
 }
 
 export function normalizePhone(phone: string): string {
@@ -97,6 +120,7 @@ export function loadCaymusUsers(): CaymusUser[] {
     return values.map(normalizeUser).filter((user) => !!user.phone);
   } catch (error) {
     console.error("Error loading Caymus users:", error);
+    backupCorruptFile(USERS_FILE);
     return [];
   }
 }
@@ -104,7 +128,8 @@ export function loadCaymusUsers(): CaymusUser[] {
 export function saveCaymusUsers(users: CaymusUser[]): void {
   ensureDataDir();
   const normalized = users.map(normalizeUser).filter((user) => !!user.phone);
-  fs.writeFileSync(USERS_FILE, JSON.stringify(normalized, null, 2));
+  atomicWriteFileSync(USERS_FILE, JSON.stringify(normalized, null, 2));
+  mirrorCaymusData("users", normalized);
 }
 
 export function findCaymusUser(phone: string): CaymusUser | undefined {
@@ -138,14 +163,17 @@ function loadSessions(): CaymusSession[] {
   try {
     const parsed = JSON.parse(fs.readFileSync(SESSIONS_FILE, "utf-8"));
     return Array.isArray(parsed) ? parsed : [];
-  } catch {
+  } catch (error) {
+    console.error("Error loading Caymus sessions:", error);
+    backupCorruptFile(SESSIONS_FILE);
     return [];
   }
 }
 
 function saveSessions(sessions: CaymusSession[]): void {
   ensureDataDir();
-  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+  atomicWriteFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+  mirrorCaymusData("sessions", sessions);
 }
 
 function hashToken(token: string): string {
@@ -194,8 +222,12 @@ export function validateCaymusSession(req: Request, phone?: string): { valid: bo
     return { valid: false };
   }
   if (phone && !phoneMatches(session.phone, phone)) return { valid: false };
-  session.lastUsedAt = now.toISOString();
-  saveSessions(sessions);
+  // Reescribir el archivo en cada request solo para lastUsedAt multiplica la
+  // ventana de corrupción; con actualizarlo cada 5 minutos basta.
+  const lastUsed = new Date(session.lastUsedAt || 0).getTime();
+  const staleLastUsed = !Number.isFinite(lastUsed) || now.getTime() - lastUsed > 5 * 60 * 1000;
+  if (staleLastUsed) session.lastUsedAt = now.toISOString();
+  if (changed || staleLastUsed) saveSessions(sessions);
   return { valid: true, phone: session.phone, expiresAt: session.expiresAt };
 }
 

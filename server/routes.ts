@@ -441,6 +441,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedPhone = normalizePhone(phone);
       const session = requireCaymusSession(req, res, normalizedPhone);
       if (!session) return;
+      // Guardia anti doble cobro: si ya tiene acceso (suscripción activa,
+      // gracia vigente u owner), mandarlo al portal de Stripe para gestionar
+      // su suscripción en lugar de crear un segundo checkout.
+      const currentAccess = getCaymusAccessStatus(normalizedPhone);
+      if (currentAccess.hasAccess) {
+        if (currentAccess.hasCustomer) {
+          const portal = await createCustomerPortalSession(normalizedPhone);
+          return res.json({ success: true, url: portal.url, alreadySubscribed: true });
+        }
+        return res.status(409).json({
+          success: false,
+          alreadySubscribed: true,
+          message: 'Ya tienes acceso activo en Caymus. No es necesario pagar de nuevo.',
+        });
+      }
+
       const selectedPlan = planInterval === 'month' ? 'month' : 'year';
       const checkoutEmail = typeof email === 'string' && email.trim() ? email : (typeof customerEmail === 'string' ? customerEmail : undefined);
       const { url, sessionId } = await createCheckoutSession(normalizedPhone, lang || 'es', selectedPlan, checkoutEmail);

@@ -36,6 +36,11 @@ function getStripe(): Stripe {
     }
     stripeClient = new Stripe(STRIPE_SECRET_KEY, {
       apiVersion: '2026-03-25.dahlia',
+      // La reconciliación corre inline en el login OTP: con los defaults del
+      // SDK (80s de timeout x 3 intentos) una degradación de Stripe dejaría
+      // colgado el login de todo usuario sin suscripción activa.
+      timeout: 10000,
+      maxNetworkRetries: 1,
     });
   }
   return stripeClient;
@@ -203,8 +208,19 @@ async function syncSubscription(subscription: Stripe.Subscription, fallbackPhone
   const expiryDate = getSubscriptionPeriodEnd(subscription);
   const planInterval = getSubscriptionPlanInterval(subscription);
   const now = new Date();
-  const pastDueAt = status === 'past_due' ? now.toISOString() : undefined;
-  const graceEndsAt = status === 'past_due' ? addDays(now, CAYMUS_GRACE_PERIOD_DAYS).toISOString() : undefined;
+
+  // El período de gracia se ancla a la PRIMERA falla de pago. Re-estamparlo en
+  // cada sync convertiría los 3 días en una ventana rodante infinita: cada
+  // login re-otorgaría gracia mientras la suscripción siga past_due/unpaid.
+  const existing = findCaymusUser(phone);
+  const alreadyPastDue = existing?.subscriptionStatus === 'past_due';
+  let pastDueAt: string | undefined;
+  let graceEndsAt: string | undefined;
+  if (status === 'past_due') {
+    pastDueAt = (alreadyPastDue && existing?.paymentPastDueAt) || now.toISOString();
+    graceEndsAt = (alreadyPastDue && existing?.graceEndsAt)
+      || addDays(new Date(pastDueAt), CAYMUS_GRACE_PERIOD_DAYS).toISOString();
+  }
 
   upsertCaymusUser(phone, {
     subscriptionStatus: status,
@@ -212,8 +228,8 @@ async function syncSubscription(subscription: Stripe.Subscription, fallbackPhone
     subscriptionExpiry: expiryDate,
     customerId: typeof subscription.customer === 'string' ? subscription.customer : (subscription.customer as any)?.id,
     planInterval,
-    paymentPastDueAt: status === 'past_due' ? pastDueAt : undefined,
-    graceEndsAt: status === 'past_due' ? graceEndsAt : undefined,
+    paymentPastDueAt: pastDueAt,
+    graceEndsAt,
   });
 
   console.log(`Caymus subscription synced for ${phone}: ${status} until ${expiryDate}`);
@@ -268,22 +284,10 @@ export async function handleStripeWebhook(
       const invoice = event.data.object as any;
       const subscriptionId = getInvoiceSubscriptionId(invoice);
       if (subscriptionId) {
+        // syncSubscription ancla la gracia a la primera falla y la preserva en
+        // los reintentos de dunning (cada retry emite payment_failed de nuevo).
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const phone = getSubscriptionPhone(subscription);
-        const now = new Date();
-        const graceEndsAt = addDays(now, CAYMUS_GRACE_PERIOD_DAYS).toISOString();
-        if (phone) {
-          upsertCaymusUser(phone, {
-            subscriptionStatus: 'past_due',
-            subscriptionId,
-            subscriptionExpiry: getSubscriptionPeriodEnd(subscription),
-            customerId: typeof subscription.customer === 'string' ? subscription.customer : (subscription.customer as any)?.id,
-            planInterval: getSubscriptionPlanInterval(subscription),
-            paymentPastDueAt: now.toISOString(),
-            graceEndsAt,
-          });
-          console.log(`Payment failed for ${phone}; grace access ends at ${graceEndsAt}`);
-        }
+        await syncSubscription(subscription);
       }
       break;
     }
@@ -334,7 +338,15 @@ export async function reconcileSubscriptionFromStripe(phone: string): Promise<bo
   if (Date.now() - lastAttempt < RECONCILE_MIN_INTERVAL_MS) return false;
   reconcileLastAttempt.set(normalizedPhone, Date.now());
 
-  try {
+  // Corre inline en el login: acotar el tiempo total aunque Stripe se degrade.
+  // El trabajo puede seguir de fondo; su escritura es solo-otorgar y fresca.
+  let deadlineTimer: NodeJS.Timeout | undefined;
+  const deadline = new Promise<'timeout'>((resolve) => {
+    deadlineTimer = setTimeout(() => resolve('timeout'), 12000);
+    deadlineTimer.unref?.();
+  });
+
+  const work = (async (): Promise<boolean> => {
     const stripe = getStripe();
     const user = findCaymusUser(normalizedPhone);
     const found = new Map<string, Stripe.Subscription>();
@@ -367,16 +379,34 @@ export async function reconcileSubscriptionFromStripe(phone: string): Promise<bo
       }
     }
 
-    if (!found.size) return false;
-
+    // Solo-otorgar: la reconciliación existe para reconocer pagos que el
+    // webhook perdió. Degradaciones (cancelled/pending) llegan por webhook;
+    // escribir aquí un snapshot no-vivo podría pisar un 'active' recién
+    // escrito por el webhook durante la ventana de lectura.
     const ranked = Array.from(found.values()).sort((a, b) => (b.created || 0) - (a.created || 0));
-    const preferred = ranked.find((sub) => LIVE_SUBSCRIPTION_STATUSES.includes(sub.status)) || ranked[0];
+    const preferred = ranked.find((sub) => LIVE_SUBSCRIPTION_STATUSES.includes(sub.status));
+    if (!preferred) return false;
+
     await syncSubscription(preferred, normalizedPhone);
     console.log(`Reconciliación Stripe para ${normalizedPhone}: subscription ${preferred.id} (${preferred.status})`);
     return true;
+  })();
+
+  try {
+    const result = await Promise.race([work, deadline]);
+    if (result === 'timeout') {
+      console.warn(`Reconciliación Stripe para ${normalizedPhone} excedió 12s; responde sin esperar.`);
+      work.catch(() => undefined);
+      return false;
+    }
+    return result;
   } catch (error) {
     console.error(`Reconciliación Stripe falló para ${normalizedPhone}:`, error);
+    // No dejar el throttle puesto tras un error: permitir reintento inmediato.
+    reconcileLastAttempt.delete(normalizedPhone);
     return false;
+  } finally {
+    if (deadlineTimer) clearTimeout(deadlineTimer);
   }
 }
 

@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { initCaymusStore } from "./caymus-store";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -41,6 +42,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Restaurar usuarios/sesiones de Caymus desde Postgres (si hay DATABASE_URL)
+  // antes de aceptar tráfico: el filesystem de Railway es efímero.
+  await initCaymusStore();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -47,6 +47,19 @@ export default function CaymusTanksSubscribe() {
     }
   }, []);
 
+  // Tras un pago exitoso, regresar a la app automáticamente via deep link
+  // (Stripe solo acepta success_url http/https, así que el salto a caymus://
+  // se hace aquí). El botón "Regresar a la App" queda como respaldo.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") !== "true") return;
+    const phoneParam = params.get("phone") || "";
+    const timer = setTimeout(() => {
+      window.location.href = `caymus://subscription-success?phone=${encodeURIComponent(phoneParam)}`;
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const t = {
     es: {
       title: "Suscripción Caymus Pro",
