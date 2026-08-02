@@ -1,3 +1,10 @@
+/*
+ * Los tokens son la fuente de verdad y viven en design-system/tokens.css, que
+ * se copia tal cual a los demás repositorios de Chyrris. Se importan aquí, no
+ * se duplican: una segunda copia se desincroniza el primer día.
+ */
+@import "../../design-system/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,27 +23,10 @@
  */
 
 :root {
-  /* Superficies */
-  --ink: 210 25% 6%;
-  --surface: 213 22% 10%;
-  --surface-raised: 214 21% 14%;
-  --line: 214 20% 20%;
-  --line-strong: 214 22% 28%;
-
-  /* Texto */
-  --text: 213 30% 94%;
-  --text-muted: 213 13% 65%;
-  --text-faint: 213 12% 50%;
-
-  /* Acento de marca (azul del isotipo) */
-  --accent: 214 76% 53%;
-  --accent-hover: 214 80% 63%;
-  --accent-contrast: 0 0% 100%;
-
-  --focus: 214 90% 66%;
-  --radius: 0.5rem;
-
-  /* Tokens que consumen los componentes de shadcn/ui heredados */
+  /*
+   * Alias que mapean los tokens del design system a los nombres que espera el
+   * resto del CSS. Los valores NO se definen aquí — vienen de tokens.css.
+   */
   --background: var(--ink);
   --foreground: var(--text);
   --muted: var(--surface-raised);
@@ -71,8 +61,7 @@
 
   body {
     @apply bg-ink text-text antialiased;
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-family: var(--font-sans);
     font-feature-settings: "kern" 1, "liga" 1;
     overflow-x: hidden;
   }

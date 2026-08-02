@@ -77,6 +77,31 @@ await derive("caymus-tanks-logo.jpg", "caymus-tanks", [128, 256, 384], "contain"
 // ── Marca ───────────────────────────────────────────────────────────────────
 await derive("chyrris-logo-mark.png", "chyrris-mark", [32, 64, 128], "cover");
 
+// Lockup oficial (isotipo + "CHYRRIS TECHNOLOGIES"), recuperado del historial.
+// Se recorta al contenido para quitar el margen muerto del render original y se
+// emite a los anchos en que se muestra: 200px en el encabezado, 260px en el pie.
+{
+  const src = path.join(SRC, "chyrris-logo-official.jpg");
+  if (await bytes(src)) {
+    const trimmed = await sharp(src).trim({ threshold: 18 }).toBuffer();
+    for (const width of [200, 260, 400, 520]) {
+      const pipeline = sharp(trimmed).resize({ width, withoutEnlargement: true });
+      const webp = path.join(GEN, `chyrris-lockup-${width}.webp`);
+      await pipeline.clone().webp({ quality: 82, effort: 5 }).toFile(webp);
+      const png = path.join(GEN, `chyrris-lockup-${width}.png`);
+      await pipeline.clone().png({ compressionLevel: 9, palette: true, quality: 90 }).toFile(png);
+      report.push({
+        name: `chyrris-lockup-${width}`,
+        before: await bytes(src),
+        webp: await bytes(webp),
+        jpg: await bytes(png),
+      });
+    }
+  } else {
+    console.warn("optimize-images: falta chyrris-logo-official.jpg, se omite el lockup");
+  }
+}
+
 // ── Iconos y favicon ────────────────────────────────────────────────────────
 const markSource = path.join(SRC, "chyrris-logo-mark.png");
 if (await bytes(markSource)) {
@@ -96,14 +121,23 @@ if (await bytes(markSource)) {
     .png({ compressionLevel: 9 })
     .toFile(path.join(PUB, "favicon.ico"));
 
-  // Imagen de Open Graph, 1200×630, con el isotipo sobre el fondo de marca.
-  const mark = await sharp(markSource).resize(300, 300, { fit: "cover" }).png().toBuffer();
-  await sharp({
-    create: { width: 1200, height: 630, channels: 4, background: "#0c0f14" },
-  })
-    .composite([{ input: mark, gravity: "center" }])
-    .png({ compressionLevel: 9, palette: true, quality: 90 })
-    .toFile(path.join(PUB, "og", "chyrris-og.png"));
+  // Imagen de Open Graph, 1200×630. Usa el lockup oficial de marca —el que
+  // lleva el wordmark— en vez de un isotipo suelto sobre un fondo plano: es lo
+  // que se ve al compartir el sitio y en las vistas previas de los buscadores
+  // con IA.
+  const lockupSource = path.join(SRC, "chyrris-logo-official.jpg");
+  if (await bytes(lockupSource)) {
+    await sharp(lockupSource)
+      .resize(1200, 630, { fit: "cover", position: "centre" })
+      .png({ compressionLevel: 9, palette: true, quality: 90 })
+      .toFile(path.join(PUB, "og", "chyrris-og.png"));
+  } else {
+    const mark = await sharp(markSource).resize(300, 300, { fit: "cover" }).png().toBuffer();
+    await sharp({ create: { width: 1200, height: 630, channels: 4, background: "#0c0f14" } })
+      .composite([{ input: mark, gravity: "center" }])
+      .png({ compressionLevel: 9, palette: true, quality: 90 })
+      .toFile(path.join(PUB, "og", "chyrris-og.png"));
+  }
 }
 
 const totalBefore = [...new Set(report.map((r) => `${r.name.split("-").slice(0, -1).join("-")}:${r.before}`))]

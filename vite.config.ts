@@ -25,13 +25,19 @@ export default defineConfig(({ isSsrBuild }) => ({
         ssr: "src/entry-server.tsx",
         outDir: path.resolve(import.meta.dirname, "dist/ssr"),
         emptyOutDir: true,
+        // Tiene que coincidir con el build de cliente. Si el SSR incrusta un
+        // asset que el cliente sirve como archivo, el HTML prerenderizado sale
+        // con un data URI y el cliente lo hidrata con una ruta distinta: la
+        // imagen se descarga dos veces y el marcado no coincide.
+        assetsInlineLimit: 0,
       }
     : {
         outDir: path.resolve(import.meta.dirname, "dist/public"),
         emptyOutDir: true,
-        // Los assets pequeños se incrustan como data URI; los grandes salen
-        // como archivo para que puedan cachearse por separado.
-        assetsInlineLimit: 2048,
+        // 0 = ninguna imagen se incrusta como data URI. Una imagen incrustada
+        // desaparece del presupuesto de imágenes y de las herramientas de
+        // auditoría, que es justo lo que el piso de peso quiere impedir.
+        assetsInlineLimit: 0,
         rollupOptions: {
           output: {
             // El runtime de React cambia pocas veces: separarlo del código de

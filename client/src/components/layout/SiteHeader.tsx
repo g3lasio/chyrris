@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useLocale } from "@/i18n/locale";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import logoMark from "@/assets/generated/chyrris-mark-64.webp";
+import logoMark2x from "@/assets/generated/chyrris-mark-128.webp";
 
 const NAV = [
   { path: "/company", key: "company" as const },
@@ -56,6 +57,15 @@ export function SiteHeader() {
       </a>
 
       <div className="container-site flex h-16 items-center justify-between gap-4">
+        {/*
+          El isotipo va como imagen y el wordmark como texto vivo.
+          Se probó el lockup completo aquí: trae su propio fondo degradado
+          horneado, así que a 36 px de alto se ve como una caja oscura con
+          letras ilegibles sobre el encabezado. El lockup se usa donde funciona
+          —la imagen de Open Graph, que es una tarjeta independiente— y el
+          encabezado se queda con marca + texto, que es nítido a cualquier
+          tamaño y además es seleccionable y traducible.
+        */}
         <Link
           href="/"
           className="flex items-center gap-2.5 rounded"
@@ -64,9 +74,11 @@ export function SiteHeader() {
         >
           <img
             src={logoMark}
+            srcSet={`${logoMark} 1x, ${logoMark2x} 2x`}
             alt=""
             width={32}
             height={32}
+            fetchPriority="high"
             className="h-8 w-8 rounded object-cover"
           />
           <span className="text-[15px] font-semibold tracking-tight text-text">

@@ -1,4 +1,6 @@
 import { Link } from "wouter";
+import logoMark from "@/assets/generated/chyrris-mark-64.webp";
+import logoMark2x from "@/assets/generated/chyrris-mark-128.webp";
 import { useLocale } from "@/i18n/locale";
 import { company, activeSocial, locationLabel, registrationLabel } from "@shared/site/company";
 import { products } from "@shared/site/portfolio";
@@ -48,7 +50,16 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-12">
           {/* Identidad */}
           <div className="md:col-span-5">
-            <p className="text-[15px] font-semibold text-text">{company.legalName}</p>
+            <img
+              src={logoMark}
+              srcSet={`${logoMark} 1x, ${logoMark2x} 2x`}
+              alt=""
+              width={40}
+              height={40}
+              loading="lazy"
+              className="h-10 w-10 rounded-lg object-cover"
+            />
+            <p className="mt-4 text-[15px] font-semibold text-text">{company.legalName}</p>
             <p className="mt-2 max-w-xs text-sm leading-relaxed text-text-muted">
               {t.footer.tagline}
             </p>

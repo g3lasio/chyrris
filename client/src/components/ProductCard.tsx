@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { AppImage, productImages } from "@/components/AppImage";
 import { useLocale } from "@/i18n/locale";
 import { platformLabels, type Product } from "@shared/site/portfolio";
 
@@ -20,8 +21,19 @@ export function ProductCard({ product }: { product: Product }) {
       className="card flex h-full flex-col p-6 transition-colors hover:border-line-strong"
       data-testid={`product-${product.key}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex items-start gap-4">
+        {/* Imagen real del producto. Las tarjetas del portafolio no mostraban
+            ninguna: un catálogo sin imágenes hace ver productos reales como si
+            fueran fichas de relleno. */}
+        {productImages[product.key] && (
+          <AppImage
+            productKey={product.key}
+            alt=""
+            displaySize={56}
+            className="h-14 w-14 shrink-0 rounded-lg border border-line object-cover"
+          />
+        )}
+        <div className="min-w-0">
           <h3 className="text-lg font-semibold text-text">{product.name}</h3>
           <p className="mt-1 text-xs uppercase tracking-[0.12em] text-text-faint">
             {product.category[locale]}

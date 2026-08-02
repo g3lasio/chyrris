@@ -1,0 +1,96 @@
+/*
+ * Chyrris design tokens.
+ *
+ * Single source of truth for colour, type, spacing, radius and shadow across
+ * every Chyrris property. Copy this file verbatim into a new repo; change only
+ * the brand accent if the property has its own.
+ *
+ * Consumed by client/src/index.css, which imports it and maps the tokens onto
+ * Tailwind's theme in tailwind.config.ts. Never hardcode a hex value in a
+ * component — if a value is missing here, add it here.
+ */
+
+:root {
+  /* ── Surfaces ───────────────────────────────────────────────────────────
+     Four steps, dark to light. Anything beyond these four is a smell: it means
+     a component is inventing depth instead of using elevation. */
+  --ink: 210 25% 6%;             /* page background                        */
+  --surface: 213 22% 10%;        /* alternating section, footer            */
+  --surface-raised: 214 21% 14%; /* hover state, popovers                  */
+  --line: 214 20% 20%;           /* default border                         */
+  --line-strong: 214 22% 28%;    /* input border, interactive border       */
+
+  /* ── Text ───────────────────────────────────────────────────────────────
+     Three steps only. `faint` is for labels and metadata, never for body
+     copy — it does not meet 4.5:1 at body size. */
+  --text: 213 30% 94%;           /* body and headings   ~15.8:1 on --ink    */
+  --text-muted: 213 13% 65%;     /* secondary copy       ~7.1:1 on --ink    */
+  --text-faint: 213 12% 50%;     /* labels, metadata     ~4.6:1 on --ink    */
+
+  /* ── Accent ─────────────────────────────────────────────────────────────
+     Taken from the brand mark. Exactly one accent: the previous site ran cyan,
+     gold, red, purple and teal at once and read as five different companies. */
+  --accent: 214 76% 53%;
+  --accent-hover: 214 80% 63%;
+  --accent-contrast: 0 0% 100%;  /* text on --accent      ~4.7:1            */
+
+  --focus: 214 90% 66%;
+
+  /* ── Radius ─────────────────────────────────────────────────────────────
+     One base value. Cards and inputs share it; only the pill is different. */
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-lg: 0.75rem;
+  --radius-pill: 9999px;
+
+  /* ── Type scale ─────────────────────────────────────────────────────────
+     System stack: zero network requests, zero render-blocking, zero font
+     swap. On a contractor's phone on site that matters more than a typeface.
+     Ratio ~1.25, with the display sizes set for a fluid jump at md. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  --text-xs: 0.75rem;    /* 12px — eyebrow, metadata      */
+  --text-sm: 0.875rem;   /* 14px — UI, captions           */
+  --text-base: 0.9375rem;/* 15px — body                   */
+  --text-lg: 1.0625rem;  /* 17px — lede                   */
+  --text-xl: 1.25rem;    /* 20px — h3                     */
+  --text-2xl: 1.5rem;    /* 24px — h2 mobile              */
+  --text-3xl: 1.875rem;  /* 30px — h2 desktop, h1 mobile  */
+  --text-4xl: 2.25rem;   /* 36px — h1                     */
+  --text-6xl: 3.75rem;   /* 60px — hero, desktop only     */
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+
+  --tracking-tight: -0.02em;  /* headings                  */
+  --tracking-wide: 0.14em;    /* small caps section labels */
+  --tracking-eyebrow: 0.18em; /* eyebrow                   */
+
+  /* ── Spacing ────────────────────────────────────────────────────────────
+     Multiples of 4px. The previous site had ad-hoc 230-250px dead gaps
+     between sections because nothing constrained the scale. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;   /* section padding, mobile  */
+  --space-24: 6rem;   /* section padding, desktop */
+
+  --container-site: 72rem;   /* 1152px — standard page width */
+  --container-prose: 48rem;  /*  768px — long-form reading   */
+
+  /* ── Elevation ──────────────────────────────────────────────────────────
+     Borders do the work, not shadows. On a near-black background a shadow is
+     invisible; a 1px border is not. Shadows are reserved for overlays that
+     genuinely float above the page. */
+  --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.6);
+  --shadow-none: none;
+}
