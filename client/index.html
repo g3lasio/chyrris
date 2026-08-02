@@ -2,14 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>CHYRRIS TECHNOLOGIES - Futuristic AI Solutions</title>
-    <link rel="icon" type="image/png" href="/chyrris-logo.png">
+    <!--
+      El viewport no limita la escala: bloquear el zoom de pellizco incumple el
+      criterio 1.4.4 de WCAG 2.1, que es requisito de elegibilidad habitual en
+      contratación pública.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0c0f14" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/brand/chyrris-logo-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <!--app-head-->
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><!--app-html--></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
 </html>

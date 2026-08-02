@@ -5,6 +5,8 @@ import { z } from "zod";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { handleContact } from "./contact";
+import { registerSeoRoutes } from "./site";
 import { sendOTP, verifyOTP } from "./twilio";
 import { moldoctorChat, analyzeLabDocument } from "./moldoctor";
 import { validateAppleReceipt, checkSubscriptionStatus, handleAppleNotification } from "./apple-iap";
@@ -73,15 +75,6 @@ function normalizePhone(phone: string): string {
 
 // Owner access is centralized in caymus-access.ts and controlled by Railway env:
 // CAYMUS_OWNER_PHONES=+12025493519. Do not add mobile-side owner bypasses.
-
-const contactSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Valid email is required"),
-  subject: z.string().optional(),
-  message: z.string().min(1, "Message is required"),
-});
-
-const LEADPRIME_CONTACT_WEBHOOK_URL = process.env.LEADPRIME_CONTACT_WEBHOOK_URL || "https://leadprime.chyrris.com/api/leads/webhook/wh_15c5d9cb3cc145972a773c43e70edc8d5939376bb84080cc";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -287,62 +280,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contact form submission endpoint
-  app.post("/api/contact", async (req, res) => {
+  // Formulario de contacto. La lógica vive en server/contact.ts: validación,
+  // honeypot, límite por IP y entrega redundante (LeadPrime + correo).
+  app.post("/api/contact", async (req, res, next) => {
     try {
-      const validatedData = contactSchema.parse(req.body);
-      const submittedAt = new Date().toISOString();
-      const leadPayload = {
-        ...validatedData,
-        source: "chyrris_website_contact_form",
-        submittedAt,
-        metadata: {
-          website: "chyrris.com",
-          userAgent: req.get("user-agent") || null,
-          ip: req.ip || req.socket.remoteAddress || null,
-        },
-      };
-
-      const webhookResponse = await fetch(LEADPRIME_CONTACT_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": "Chyrris-Website/1.0",
-        },
-        body: JSON.stringify(leadPayload),
-      });
-
-      if (!webhookResponse.ok) {
-        const errorText = await webhookResponse.text().catch(() => "");
-        console.error("LeadPrime webhook rejected contact lead", {
-          status: webhookResponse.status,
-          response: errorText.slice(0, 500),
-        });
-
-        return res.status(502).json({
-          success: false,
-          message: "Lead webhook unavailable",
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Message received successfully",
-      });
+      await handleContact(req, res);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({
-          success: false,
-          message: "Validation error",
-          errors: error.errors,
-        });
-      }
-
-      console.error("Error forwarding contact lead", error);
-      return res.status(500).json({
-        success: false,
-        message: "An error occurred while processing your request",
-      });
+      next(error);
     }
   });
 
@@ -542,6 +486,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
   });
+
+  // robots.txt y sitemap.xml, generados a partir de la tabla de rutas para que
+  // no puedan quedar desfasados respecto al sitio.
+  registerSeoRoutes(app);
 
   const httpServer = createServer(app);
 

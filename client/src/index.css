@@ -1,246 +1,175 @@
-@import url('https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 222 10% 10%;
-  --foreground: 210 40% 98%;
-  
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-  
-  --popover: 222 14% 12%;
-  --popover-foreground: 210 40% 98%;
-  
-  --card: 222 14% 12%;
-  --card-foreground: 210 40% 98%;
-  
-  --border: 216 34% 17%;
-  --input: 216 34% 17%;
-  
-  --primary: 207 90% 54%;
-  --primary-foreground: 210 40% 98%;
-  
-  --secondary: 195 80% 55%;
-  --secondary-foreground: 210 40% 98%;
-  
-  --accent: 45 93% 47%;
-  --accent-foreground: 210 40% 98%;
-  
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
+/*
+ * Un solo sistema de diseño para todo el sitio.
+ *
+ * El sitio anterior corría tres a la vez: la portada sci-fi cian, Tzotzil en
+ * dorado con emoji por iconos, y Caymus/support sin encabezado ni pie. Todo lo
+ * que sigue está tomado de la marca: un azul corporativo sobre pizarra oscura,
+ * sin neón y sin efectos de HUD.
+ *
+ * Tipografía: pila del sistema. Cero peticiones a fonts.googleapis.com, cero
+ * bloqueo de render y cero salto de fuente — importa más en un teléfono en obra
+ * que una tipografía de marca.
+ */
 
-  --chart-1: 207 90% 54%;
-  --chart-2: 0 84% 60%;
-  --chart-3: 45 93% 47%;
-  --chart-4: 162 94% 61%;
-  --chart-5: 283 68% 70%;
-  
-  --stark-red: 0 84% 60%;
-  --stark-gold: 45 93% 47%;
-  --hud-blue: 195 100% 64%;
-  --glow-teal: 162 94% 61%;
-  
-  --ring: 216 34% 17%;
+:root {
+  /* Superficies */
+  --ink: 210 25% 6%;
+  --surface: 213 22% 10%;
+  --surface-raised: 214 21% 14%;
+  --line: 214 20% 20%;
+  --line-strong: 214 22% 28%;
+
+  /* Texto */
+  --text: 213 30% 94%;
+  --text-muted: 213 13% 65%;
+  --text-faint: 213 12% 50%;
+
+  /* Acento de marca (azul del isotipo) */
+  --accent: 214 76% 53%;
+  --accent-hover: 214 80% 63%;
+  --accent-contrast: 0 0% 100%;
+
+  --focus: 214 90% 66%;
   --radius: 0.5rem;
+
+  /* Tokens que consumen los componentes de shadcn/ui heredados */
+  --background: var(--ink);
+  --foreground: var(--text);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--text-muted);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-contrast);
+  --secondary: var(--surface-raised);
+  --secondary-foreground: var(--text);
+  --accent-foreground: var(--accent-contrast);
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: var(--focus);
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  
+
+  html {
+    scroll-behavior: smooth;
+    /* Compensa el encabezado fijo cuando se entra directo a un ancla. */
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-[#0a0d12] font-quantico text-white;
+    @apply bg-ink text-text antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-feature-settings: "kern" 1, "liga" 1;
     overflow-x: hidden;
   }
 
-  /* Typography classes */
-  .font-quantico {
-    font-family: 'Quantico', sans-serif;
+  h1, h2, h3, h4 {
+    @apply text-text;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
   }
 
-  .font-rajdhani {
-    font-family: 'Rajdhani', sans-serif;
+  p {
+    text-wrap: pretty;
   }
 
-  /* Special effects */
-  .tech-border {
-    @apply relative border border-[#4cc4ff40] overflow-hidden;
+  /* Un anillo de foco visible y consistente: el sitio anterior no tenía ninguno. */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid hsl(var(--focus));
+    outline-offset: 2px;
+    border-radius: 3px;
   }
 
-  .hex-bg {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5.278L52.5 18.139v25.722L30 56.722 7.5 43.861V18.139L30 5.278zm0 2.887L10 19.463v21.074L30 53.834l20-13.297V19.463L30 8.165z' fill='%234cc4ff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  ::selection {
+    background: hsl(var(--accent) / 0.35);
+  }
+}
+
+@layer components {
+  /* Ritmo vertical único. Sustituye los huecos muertos de 230-250px. */
+  .section {
+    @apply py-16 md:py-24;
   }
 
-  .glow-text {
-    text-shadow: 0 0 10px currentColor;
+  .container-site {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8;
   }
 
-  /* Animation classes */
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
+  .container-prose {
+    @apply mx-auto w-full max-w-3xl px-5 sm:px-6 lg:px-8;
   }
 
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-accent;
   }
 
-  .animate-rotate-slow {
-    animation: rotate 15s linear infinite;
+  .card {
+    @apply rounded-lg border border-line bg-surface;
   }
 
-  .animate-scan-line {
-    animation: scan-line 2s linear infinite;
+  .link-underline {
+    @apply text-accent underline decoration-accent/40 underline-offset-4 transition-colors hover:decoration-accent;
   }
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+  /*
+   * Contenido de texto largo (legales, soporte, fichas). Sustituye el estilo
+   * ad-hoc que cada página traía por su cuenta.
+   */
+  .prose-site {
+    @apply text-[15px] leading-relaxed text-text-muted;
   }
+  .prose-site h2 {
+    @apply mb-3 mt-10 text-xl font-semibold text-text;
+  }
+  .prose-site h3 {
+    @apply mb-2 mt-7 text-base font-semibold text-text;
+  }
+  .prose-site p {
+    @apply mb-4;
+  }
+  .prose-site ul {
+    @apply mb-4 list-disc space-y-2 pl-5;
+  }
+  .prose-site ol {
+    @apply mb-4 list-decimal space-y-2 pl-5;
+  }
+  .prose-site a {
+    @apply text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent;
+  }
+  .prose-site strong {
+    @apply font-semibold text-text;
+  }
+}
 
-  @keyframes pulse-glow {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-
-  @keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  @keyframes scan-line {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(100%); }
-  }
-
-  @keyframes slide {
-    0% { left: -100%; }
-    100% { left: 100%; }
-  }
-
-  @keyframes scan {
-    0%, 100% { transform: translateX(-100%); }
-    50% { transform: translateX(100%); }
-  }
-  
-  /* New Tony Stark / Iron Man UI animations */
-  .animate-scan-y {
-    animation: scan-y 2s linear infinite;
-  }
-  
-  .animate-scan-x {
-    animation: scan-x 3s linear infinite;
-  }
-  
-  .animate-scanner-y {
-    animation: scanner-y 4s linear infinite;
-  }
-  
-  .animate-scanner-x {
-    animation: scanner-x 3s linear infinite;
-  }
-  
-  .animate-pulse-fast {
-    animation: pulse-fast 1s ease-in-out infinite;
-  }
-  
-  .animate-pulse-med {
-    animation: pulse-med 1.5s ease-in-out infinite;
-  }
-  
-  .animate-pulse-slow {
-    animation: pulse-slow 2s ease-in-out infinite;
-  }
-  
-  .hud-panel {
-    @apply relative rounded-lg overflow-hidden border border-[#4cc4ff30] bg-[#12172180] backdrop-blur-sm;
-    box-shadow: 0 0 15px rgba(53, 255, 221, 0.1);
-  }
-  
-  .hud-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #4cc4ff, transparent);
-    animation: hud-scan 3s linear infinite;
-  }
-  
-  .text-shimmer {
-    background: linear-gradient(90deg, #4cc4ff, #ffffff, #4cc4ff);
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite;
-  }
-  
-  @keyframes hud-scan {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  
-  @keyframes shimmer {
-    0% { background-position: 0% center; }
-    100% { background-position: 200% center; }
-  }
-  
-  @keyframes scan-y {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-  }
-  
-  @keyframes scan-x {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  
-  @keyframes scanner-y {
-    0%, 100% { transform: translateY(0); opacity: 0.6; }
-    50% { transform: translateY(100%); opacity: 0.2; }
-  }
-  
-  @keyframes scanner-x {
-    0%, 100% { transform: translateX(0); opacity: 0.6; }
-    50% { transform: translateX(100%); opacity: 0.2; }
-  }
-  
-  @keyframes pulse-fast {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.1); opacity: 0.8; }
-  }
-  
-  @keyframes pulse-med {
-    0%, 100% { transform: scale(1); opacity: 0.4; }
-    50% { transform: scale(1.15); opacity: 0.7; }
-  }
-  
-  @keyframes pulse-slow {
-    0%, 100% { transform: scale(1); opacity: 0.3; }
-    50% { transform: scale(1.2); opacity: 0.6; }
-  }
-  
-  /* Armor plate effect */
-  .armor-plate {
-    position: relative;
-    background: linear-gradient(135deg, #121721 0%, #1e2738 100%);
-    border: 1px solid #4cc4ff30;
-    clip-path: polygon(0% 15%, 15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%);
-  }
-  
-  .armor-plate::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(76, 196, 255, 0.1) 0%, rgba(53, 255, 221, 0.05) 100%);
-    clip-path: polygon(0% 15%, 15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%);
+@layer utilities {
+  /*
+   * No hay ninguna regla que ponga opacidad 0 en contenido. Es deliberado: el
+   * sitio anterior dejaba secciones enteras casi transparentes cuando la
+   * animación de scroll no llegaba a completarse. Ver client/src/components/
+   * Reveal.tsx — la entrada anima sólo un desplazamiento, nunca la opacidad.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

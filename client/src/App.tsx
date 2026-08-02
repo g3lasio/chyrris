@@ -1,54 +1,39 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { LanguageProvider } from "./hooks/useLanguage";
-import NotFound from "@/pages/not-found";
-import Home from "./pages/Home";
-import TzotzilBible from "./pages/TzotzilBible";
-import TzotzilBiblePrivacy from "./pages/TzotzilBiblePrivacy";
-import TzotzilBibleAbout from "./pages/TzotzilBibleAbout";
-import TzotzilBibleSupport from "./pages/TzotzilBibleSupport";
-import PocimaSalvaje from "./pages/PocimaSalvaje";
-import PocimaSalvajePrivacy from "./pages/PocimaSalvajePrivacy";
-import PocimaSalvajeTerms from "./pages/PocimaSalvajeTerms";
-import PocimaSalvajeSupport from "./pages/PocimaSalvajeSupport";
-import CaymusTanks from "./pages/CaymusTanks";
-import CaymusTanksPrivacy from "./pages/CaymusTanksPrivacy";
-import CaymusTanksSupport from "./pages/CaymusTanksSupport";
-import CaymusTanksSubscribe from "./pages/CaymusTanksSubscribe";
+import type { ComponentType } from "react";
+import { Route, Router, Switch } from "wouter";
+import { LocaleProvider, routerBase, type Locale } from "@/i18n/locale";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/tzotzil-bible" component={TzotzilBible} />
-      <Route path="/tzotzil-bible/about" component={TzotzilBibleAbout} />
-      <Route path="/tzotzil-bible/support" component={TzotzilBibleSupport} />
-      <Route path="/tzotzil-bible/privacy" component={TzotzilBiblePrivacy} />
-      <Route path="/pocima-salvaje" component={PocimaSalvaje} />
-      <Route path="/pocima-salvaje/privacy" component={PocimaSalvajePrivacy} />
-      <Route path="/pocima-salvaje/terms" component={PocimaSalvajeTerms} />
-      <Route path="/pocima-salvaje/support" component={PocimaSalvajeSupport} />
-      <Route path="/caymus-tanks" component={CaymusTanks} />
-      <Route path="/caymus-tanks/privacy" component={CaymusTanksPrivacy} />
-      <Route path="/caymus-tanks/support" component={CaymusTanksSupport} />
-      <Route path="/caymus-tanks/subscribe" component={CaymusTanksSubscribe} />
-      <Route component={NotFound} />
-    </Switch>
-  );
+/**
+ * El idioma se resuelve una sola vez por carga de documento y se pasa como
+ * `base` a wouter, de modo que un <Link href="/company"> apunta a "/company" en
+ * inglés y a "/es/company" en español sin que ninguna página tenga que saberlo.
+ *
+ * Cambiar de idioma es una navegación de documento completa (ver
+ * LanguageSwitcher), así que `base` nunca necesita cambiar en caliente.
+ */
+export interface AppProps {
+  locale: Locale;
+  /** Ruta lógica sin prefijo de idioma. */
+  path: string;
+  /** Componentes por ruta: React.lazy en el cliente, ya resueltos en el prerender. */
+  pages: Record<string, ComponentType<any>>;
+  notFound: ComponentType<any>;
+  /** URL completa para el render estático del prerender. */
+  ssrPath?: string;
 }
 
-function App() {
+export default function App({ locale, path, pages, notFound: NotFound, ssrPath }: AppProps) {
+  const base = routerBase(locale);
+
   return (
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </LanguageProvider>
+    <LocaleProvider locale={locale} path={path}>
+      <Router base={base} ssrPath={ssrPath}>
+        <Switch>
+          {Object.entries(pages).map(([routePath, Component]) => (
+            <Route key={routePath} path={routePath} component={Component} />
+          ))}
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
+    </LocaleProvider>
   );
 }
-
-export default App;

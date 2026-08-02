@@ -1,7 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { initCaymusStore } from "./caymus-store";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, log } from "./vite";
+import { serveStatic } from "./site";
 
 const app = express();
 // El webhook de Stripe necesita el body crudo e intacto para verificar la firma.

@@ -1,152 +1,157 @@
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { ParticleBackground } from "../components/ParticleBackground";
-import { LanguageSwitcher } from "../components/LanguageSwitcher";
-import { useLanguage } from "../hooks/useLanguage";
-import { Hero } from "../sections/Hero";
-import { About } from "../sections/About";
-import { Technologies } from "../sections/Technologies";
-import { Applications } from "../sections/Applications";
-import { Contact } from "../sections/Contact";
-import { Footer } from "../sections/Footer";
-import chyrrisBrandLogo from "@/assets/chyrris-brand-lockup.webp";
+import { Link } from "wouter";
+import { Layout } from "@/components/layout/Layout";
+import { Reveal } from "@/components/Reveal";
+import { ProductCard } from "@/components/ProductCard";
+import { useLocale } from "@/i18n/locale";
+import { company, locationLabel, registrationLabel } from "@shared/site/company";
+import { featuredProduct, otherProducts } from "@shared/site/portfolio";
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const { currentLanguage, setLanguage, translations, isEnglish, isSpanish } = useLanguage();
-
-  // Track scroll position for nav effects
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const navLinks = [
-    { href: "#about", label: translations.navigation.about },
-    { href: "#technologies", label: translations.navigation.technologies },
-    { href: "#applications", label: translations.navigation.applications },
-    { href: "#contact", label: translations.navigation.contact },
-  ];
+  const { t, locale } = useLocale();
 
   return (
-    <main className="min-h-screen relative overflow-x-hidden bg-[#0a0d12]">
-      <ParticleBackground />
-
-      {/* Premium Glassmorphism Navigation */}
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-        className={`fixed top-0 left-0 w-full z-50 py-4 transition-all duration-500 ${
-          scrollY > 10 
-            ? "bg-[#0a0d12]/80 backdrop-blur-xl border-b border-[#4cc4ff]/10" 
-            : ""
-        }`}
-      >
-        <div className="container mx-auto px-6 relative">
-          {/* Clean header layout */}
-          <div className="flex justify-between items-center">
-            {/* Desktop Navigation - Left */}
-            <div className="hidden md:flex items-center space-x-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-white hover:text-[#4cc4ff] transition-colors text-sm uppercase tracking-wider relative group"
-                  data-testid={`nav-${link.href.replace('#', '')}`}
-                >
-                  {link.label}
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#4cc4ff] group-hover:w-full transition-all duration-300"></span>
-                </a>
-              ))}
-            </div>
-            
-            {/* Clean Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none">
-              <img 
-                src={chyrrisBrandLogo} 
-                alt="CHYRRIS TECHNOLOGIES" 
-                className="h-12 w-auto max-w-[220px] object-contain rounded-md"
-                data-testid="logo"
-              />
-            </div>
-            
-            {/* Desktop Language Switcher - Right */}
-            <div className="hidden md:flex items-center">
-              <LanguageSwitcher variant="default" />
-            </div>
-            
-            {/* Mobile Language Switcher - Left */}
-            <div className="md:hidden">
-              <LanguageSwitcher variant="minimal" />
-            </div>
-            
-            {/* Mobile menu button - Right */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden text-[#4cc4ff] hover:text-[#35ffdd] transition-colors"
-              data-testid="mobile-menu-button"
+    <Layout path="/">
+      {/* Hero — sin indicador de scroll encima del titular y sin capacidades abstractas. */}
+      <section className="border-b border-line">
+        <div className="container-site py-20 md:py-28">
+          <p className="eyebrow" data-testid="hero-eyebrow">
+            {t.hero.eyebrow}
+          </p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight text-text md:text-6xl">
+            {t.hero.title}
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-muted">{t.hero.lede}</p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <a
+              href="https://leadprimecrm.chyrris.com"
+              className="rounded bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+              data-testid="hero-cta-leadprime"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+              {t.hero.primaryCta}
+            </a>
+            <Link
+              href="/company"
+              className="rounded border border-line-strong px-5 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text"
+              data-testid="hero-cta-company"
+            >
+              {t.hero.secondaryCta}
+            </Link>
           </div>
-
-          {/* Clean Mobile menu */}
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="md:hidden absolute top-full left-0 right-0 mt-2 mx-4 p-6 bg-[#0a0d12]/95 backdrop-blur-xl rounded-2xl border border-[#4cc4ff]/10 shadow-2xl"
-            >
-              <div className="flex flex-col space-y-1">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="text-white/80 hover:text-[#4cc4ff] hover:bg-[#4cc4ff]/5 transition-all text-sm uppercase tracking-wider py-3 px-4 rounded-lg"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </motion.div>
-          )}
         </div>
-      </motion.nav>
+      </section>
 
-      {/* Main content sections - Reorganized for impact */}
-      <Hero />
-      <Technologies />
-      <Applications />
-      <About />
-      <Contact />
-      <Footer />
-    </main>
+      {/* Producto principal, destacado — no una tarjeta más entre seis. */}
+      <section className="section border-b border-line bg-surface" id="leadprime">
+        <div className="container-site">
+          <Reveal>
+            <div className="grid gap-10 md:grid-cols-12 md:items-start">
+              <div className="md:col-span-7">
+                <p className="eyebrow">{t.featured.eyebrow}</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text md:text-4xl">
+                  {t.featured.heading}
+                </h2>
+                <p className="mt-5 text-[17px] leading-relaxed text-text-muted">{t.featured.body}</p>
+                <p className="mt-4 text-[15px] leading-relaxed text-text-muted">
+                  {t.featured.agentNote}
+                </p>
+                <a
+                  href="https://leadprimecrm.chyrris.com"
+                  className="mt-7 inline-flex items-center gap-2 rounded bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+                  data-testid="featured-cta"
+                >
+                  {t.featured.cta}
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M10.3 3.3a1 1 0 011.4 0l6 6a1 1 0 010 1.4l-6 6a1 1 0 01-1.4-1.4L14.6 11H3a1 1 0 110-2h11.6l-4.3-4.3a1 1 0 010-1.4z" />
+                  </svg>
+                </a>
+              </div>
+
+              <dl className="card md:col-span-5 md:p-7 p-6 text-sm">
+                {[
+                  [locale === "es" ? "Producto" : "Product", featuredProduct.name],
+                  [
+                    locale === "es" ? "Para" : "For",
+                    locale === "es" ? "Contratistas" : "Contractors",
+                  ],
+                  [locale === "es" ? "Agente de IA" : "AI agent", "KEEN"],
+                  [locale === "es" ? "Dónde" : "Where", "leadprimecrm.chyrris.com"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4 border-b border-line py-3 first:pt-0 last:border-0 last:pb-0">
+                    <dt className="text-text-faint">{k}</dt>
+                    <dd className="text-right font-medium text-text">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Portafolio */}
+      <section className="section border-b border-line" id="portfolio">
+        <div className="container-site">
+          <Reveal>
+            <p className="eyebrow">{t.portfolio.eyebrow}</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text md:text-4xl">
+              {t.portfolio.heading}
+            </h2>
+            <p className="mt-4 max-w-2xl text-[17px] leading-relaxed text-text-muted">
+              {t.portfolio.lede}
+            </p>
+          </Reveal>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {otherProducts.map((product, i) => (
+              <Reveal key={product.key} delay={i * 45}>
+                <ProductCard product={product} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* La compañía */}
+      <section className="section bg-surface" id="company">
+        <div className="container-site">
+          <Reveal>
+            <div className="grid gap-10 md:grid-cols-12">
+              <div className="md:col-span-6">
+                <p className="eyebrow">{t.companySection.eyebrow}</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-text md:text-4xl">
+                  {t.companySection.heading}
+                </h2>
+                <p className="mt-5 text-[17px] leading-relaxed text-text-muted">
+                  {t.companySection.lede}
+                </p>
+                <Link
+                  href="/company"
+                  className="mt-7 inline-block rounded border border-line-strong px-5 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text"
+                  data-testid="company-cta"
+                >
+                  {t.companySection.cta}
+                </Link>
+              </div>
+
+              <dl className="md:col-span-6">
+                {[
+                  [t.companySection.facts.legalNameLabel, company.legalName],
+                  [t.companySection.facts.registrationLabel, registrationLabel],
+                  [t.companySection.facts.locationLabel, locationLabel],
+                  [t.companySection.facts.contactLabel, company.email.general],
+                ].map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-4 border-b border-line py-3.5 text-sm first:pt-0 last:border-0"
+                  >
+                    <dt className="text-text-faint">{k}</dt>
+                    <dd className="text-text">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </Layout>
   );
 }

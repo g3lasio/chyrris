@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import { type Express } from "express";
 import fs from "fs";
 import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
@@ -67,21 +67,6 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
-export function serveStatic(app: Express) {
-  // vite.config.ts sets build.outDir to dist/public
-  // At runtime, import.meta.dirname = /app/dist, so dist/public = import.meta.dirname/public
-  const distPath = path.resolve(import.meta.dirname, "public");
-
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
-  }
-
-  app.use(express.static(distPath));
-
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
-}
+// El servido de producción vive en server/site.ts: entrega el HTML
+// prerenderizado de cada ruta y responde 404 de verdad ante una ruta que no
+// existe. Este archivo sólo se ocupa del servidor de desarrollo.

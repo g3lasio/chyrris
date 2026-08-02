@@ -1,0 +1,13 @@
+{
+  "name": "Chyrris Technologies LLC",
+  "short_name": "Chyrris",
+  "description": "Chyrris Technologies LLC builds and operates AI software.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0f14",
+  "theme_color": "#0c0f14",
+  "icons": [
+    { "src": "/brand/chyrris-logo-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brand/chyrris-logo-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
