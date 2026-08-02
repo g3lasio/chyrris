@@ -9,7 +9,8 @@
     "build:client": "vite build",
     "build:ssr": "vite build --ssr src/entry-server.tsx",
     "prerender": "node scripts/prerender.mjs",
-    "build": "npm run images && npm run build:client && npm run build:ssr && npm run prerender && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "npm run build:images && npm run build:client && npm run build:ssr && npm run prerender && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build:images": "npm run images || echo '[build] optimize-images no corrio (sharp no disponible); se usan los derivados versionados en client/src/assets/generated y client/public'",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"
